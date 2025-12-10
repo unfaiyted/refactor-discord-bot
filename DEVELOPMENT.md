@@ -24,13 +24,46 @@ bun run docker:dev:down
 
 ### Docker Files
 
-**Production:**
-- `Dockerfile` - Multi-stage production build
-- `docker-compose.yml` - Production configuration
+**Unified Dockerfile with Build Targets:**
+- `Dockerfile` - Single file with multiple build targets:
+  - `development` target: Full Debian environment with hot reload
+  - `production-deps` target: Dependency build stage
+  - `production` target: Optimized production build (default)
 
-**Development:**
-- `Dockerfile.dev` - Development build with all dev dependencies
-- `docker-compose.override.yml` - Development overrides (auto-applied)
+**Compose Files:**
+- `docker-compose.yml` - Base configuration (uses `production` target)
+- `docker-compose.override.yml` - Development overrides (uses `development` target)
+
+### Build Targets Explained
+
+The unified `Dockerfile` contains multiple build targets:
+
+```dockerfile
+FROM ... AS development   # Development target (full environment)
+FROM ... AS production-deps  # Production dependencies build
+FROM ... AS production    # Production target (default)
+```
+
+**To build a specific target manually:**
+```bash
+# Build development image
+docker build --target development -t bot:dev .
+
+# Build production image (or omit --target, it's the default)
+docker build --target production -t bot:prod .
+docker build -t bot:prod .  # Same as above
+```
+
+**In docker-compose**, targets are specified in the build section:
+```yaml
+# docker-compose.yml (production)
+build:
+  target: production
+
+# docker-compose.override.yml (development)
+build:
+  target: development
+```
 
 ### How docker-compose.override.yml Works
 
@@ -45,7 +78,7 @@ docker-compose -f docker-compose.yml -f docker-compose.override.yml up
 ```
 
 **What gets overridden for development:**
-- Uses `Dockerfile.dev` instead of `Dockerfile`
+- Uses `development` build target instead of `production`
 - Mounts source code as volumes for hot reload
 - Sets `NODE_ENV=development` and `LOG_LEVEL=debug`
 - Removes automatic restart policy
@@ -233,7 +266,9 @@ docker-compose up -d
 
 | Feature | Development | Production |
 |---------|------------|-----------|
-| **Dockerfile** | `Dockerfile.dev` | `Dockerfile` |
+| **Dockerfile** | `Dockerfile` (same file) | `Dockerfile` (same file) |
+| **Build Target** | `development` | `production` (default) |
+| **Base Image** | Debian (full) | Slim (minimal) |
 | **Build Stages** | Single stage | Multi-stage (optimized) |
 | **Dependencies** | All (including dev) | Production only |
 | **Hot Reload** | ✅ Yes (volume mounts) | ❌ No |
