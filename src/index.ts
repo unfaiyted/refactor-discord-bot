@@ -1,8 +1,53 @@
-import { Client, GatewayIntentBits, Events } from 'discord.js';
+import { Client, GatewayIntentBits, Events, PermissionFlagsBits } from 'discord.js';
 import { env } from '@config/env.js';
 import { logger } from '@utils/logger.js';
 import { handleRecommendationMessage } from '@features/recommendations/events/message-handler.js';
 import { ensureForumTags } from '@features/recommendations/services/forum-poster.js';
+
+/**
+ * Generate bot invite URL with required permissions
+ */
+function generateInviteUrl(clientId: string): string {
+  const permissions =
+    PermissionFlagsBits.ViewChannel |
+    PermissionFlagsBits.SendMessages |
+    PermissionFlagsBits.CreatePublicThreads |
+    PermissionFlagsBits.SendMessagesInThreads |
+    PermissionFlagsBits.EmbedLinks |
+    PermissionFlagsBits.ReadMessageHistory |
+    PermissionFlagsBits.ManageThreads;
+
+  return `https://discord.com/api/oauth2/authorize?client_id=${clientId}&permissions=${permissions}&scope=bot`;
+}
+
+/**
+ * Display setup instructions
+ */
+function displaySetupInstructions() {
+  const inviteUrl = generateInviteUrl(env.discord.clientId);
+
+  console.log('\n' + '='.repeat(80));
+  console.log('🤖 BOT SETUP REQUIRED');
+  console.log('='.repeat(80));
+  console.log('\nThe bot needs proper permissions to function correctly.');
+  console.log('\n📋 Required Permissions:');
+  console.log('  • View Channels');
+  console.log('  • Send Messages');
+  console.log('  • Create Public Threads');
+  console.log('  • Send Messages in Threads');
+  console.log('  • Embed Links');
+  console.log('  • Read Message History');
+  console.log('  • Manage Threads');
+  console.log('\n🔗 Invite Link (click to add bot with correct permissions):');
+  console.log(`\n  ${inviteUrl}\n`);
+  console.log('📝 Steps to fix:');
+  console.log('  1. Click the invite link above');
+  console.log('  2. Select your server from the dropdown');
+  console.log('  3. Ensure all permissions are checked');
+  console.log('  4. Click "Authorize"');
+  console.log('  5. Restart the bot');
+  console.log('\n' + '='.repeat(80) + '\n');
+}
 
 /**
  * Initialize Discord client with required intents
@@ -24,7 +69,16 @@ client.once(Events.ClientReady, async (readyClient) => {
   logger.info(`Forum channel: ${env.discord.processedRecommendationsForumId}`);
 
   // Check and warn about missing forum tags
-  await ensureForumTags(readyClient);
+  try {
+    await ensureForumTags(readyClient);
+  } catch (error: any) {
+    if (error?.message?.includes('Missing Access')) {
+      logger.error('Bot is missing required permissions!');
+      displaySetupInstructions();
+    } else {
+      logger.error('Failed to check forum tags', error);
+    }
+  }
 });
 
 /**

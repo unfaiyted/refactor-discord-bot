@@ -2,8 +2,6 @@
 # This file is automatically used by docker-compose when present
 # It overrides settings in docker-compose.yml for development workflow
 
-version: '3.8'
-
 services:
   bot:
     # Use development build target from unified Dockerfile
@@ -43,11 +41,14 @@ services:
       LOG_LEVEL: debug # More verbose logging for development
       DOCKER_CONTAINER: 'true'
 
-    # Override command to use Bun's watch mode
-    command: ['bun', '--watch', 'src/index.ts']
+    # Entrypoint script handles watch mode based on NODE_ENV
+    # No command override needed - uses Dockerfile's CMD
 
     # Use default restart policy for dev (no automatic restart)
     restart: 'no'
 
-  # PostgreSQL stays the same - no overrides needed
-  # The production config from docker-compose.yml is used
+  # PostgreSQL port override for development
+  # Use custom port 15432 on host to avoid conflicts
+  postgres:
+    ports:
+      - '15432:5432' # Map host port 15432 to container port 5432

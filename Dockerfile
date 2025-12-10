@@ -45,6 +45,10 @@ RUN bun install
 COPY prisma ./prisma
 RUN bunx prisma generate
 
+# Copy entrypoint script for migrations
+COPY docker-entrypoint.sh ./
+RUN chmod +x docker-entrypoint.sh
+
 # Create data directory for SQLite cache
 RUN mkdir -p /app/data
 
@@ -54,9 +58,11 @@ RUN mkdir -p /app/data
 # Expose port (useful for potential webhooks or debugging)
 EXPOSE 3000
 
-# Development command with hot reload
-# Bun's --watch flag automatically restarts on file changes
-CMD ["bun", "--watch", "src/index.ts"]
+# Use dumb-init to handle signals properly
+ENTRYPOINT ["dumb-init", "--"]
+
+# Run entrypoint script which handles migrations and starts bot
+CMD ["./docker-entrypoint.sh"]
 
 # ============================================================================
 # PRODUCTION - DEPENDENCIES STAGE

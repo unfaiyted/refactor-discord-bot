@@ -144,42 +144,44 @@ function getEmbedColor(sentiment: string): number {
  * Ensure required forum tags exist
  */
 export async function ensureForumTags(client: Client): Promise<void> {
-  try {
-    const channel = await client.channels.fetch(env.discord.processedRecommendationsForumId);
+  const channel = await client.channels.fetch(env.discord.processedRecommendationsForumId);
 
-    if (!channel || channel.type !== ChannelType.GuildForum) {
-      logger.warn('Cannot ensure tags: channel is not a forum');
-      return;
-    }
+  if (!channel || channel.type !== ChannelType.GuildForum) {
+    logger.warn('Cannot ensure tags: channel is not a forum');
+    return;
+  }
 
-    const forumChannel = channel as ForumChannel;
-    const existingTags = forumChannel.availableTags.map((tag) => tag.name.toLowerCase());
+  const forumChannel = channel as ForumChannel;
+  const existingTags = forumChannel.availableTags.map((tag) => tag.name.toLowerCase());
 
-    const requiredTags = [
-      { name: 'Video', emoji: '🎥' },
-      { name: 'Podcast', emoji: '🎙️' },
-      { name: 'Article', emoji: '📰' },
-      { name: 'Book', emoji: '📚' },
-      { name: 'Tool', emoji: '🛠️' },
-      { name: 'Course', emoji: '🎓' },
-    ];
+  const requiredTags = [
+    // Content types
+    { name: 'Video', emoji: '🎥' },
+    { name: 'Podcast', emoji: '🎙️' },
+    { name: 'Article', emoji: '📰' },
+    { name: 'Book', emoji: '📚' },
+    { name: 'Tool', emoji: '🛠️' },
+    { name: 'Course', emoji: '🎓' },
+    // Topic categories
+    { name: 'Tech', emoji: '💻' },
+    { name: 'AI', emoji: '🤖' },
+    { name: 'Relationships', emoji: '💑' },
+    { name: 'Fitness', emoji: '💪' },
+    { name: 'Health', emoji: '🏥' },
+    { name: 'Infrastructure', emoji: '🏗️' },
+  ];
 
-    const missingTags = requiredTags.filter(
-      (tag) => !existingTags.includes(tag.name.toLowerCase())
-    );
+  const missingTags = requiredTags.filter((tag) => !existingTags.includes(tag.name.toLowerCase()));
 
-    if (missingTags.length > 0) {
-      logger.info('Missing forum tags detected', {
-        missing: missingTags.map((t) => t.name),
-      });
-      logger.warn('Please manually create these forum tags in Discord:');
-      missingTags.forEach((tag) => {
-        logger.warn(`  - ${tag.emoji} ${tag.name}`);
-      });
-    } else {
-      logger.info('All required forum tags are present');
-    }
-  } catch (error) {
-    logger.error('Failed to check forum tags', error);
+  if (missingTags.length > 0) {
+    logger.info('Missing forum tags detected', {
+      missing: missingTags.map((t) => t.name),
+    });
+    logger.warn('Please manually create these forum tags in Discord:');
+    missingTags.forEach((tag) => {
+      logger.warn(`  - ${tag.emoji} ${tag.name}`);
+    });
+  } else {
+    logger.info('All required forum tags are present');
   }
 }
