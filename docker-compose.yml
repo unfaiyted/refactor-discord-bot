@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:17-alpine
+    container_name: refactor-bot-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: refactor_bot
+      POSTGRES_USER: refactor
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U refactor -d refactor_bot"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - bot-network
+
+  # Discord Bot
+  bot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: refactor-bot
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      # Discord Configuration
+      DISCORD_BOT_TOKEN: ${DISCORD_BOT_TOKEN}
+      DISCORD_CLIENT_ID: ${DISCORD_CLIENT_ID}
+      RECOMMENDATIONS_CHANNEL_ID: ${RECOMMENDATIONS_CHANNEL_ID}
+      PROCESSED_RECOMMENDATIONS_FORUM_ID: ${PROCESSED_RECOMMENDATIONS_FORUM_ID}
+
+      # Claude AI Configuration
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+
+      # Database Configuration
+      DATABASE_URL: postgresql://refactor:${POSTGRES_PASSWORD:-changeme}@postgres:5432/refactor_bot?schema=public
+
+      # Application Configuration
+      NODE_ENV: ${NODE_ENV:-production}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      DOCKER_CONTAINER: "true"
+    volumes:
+      # Mount for SQLite cache (optional, for persistence across restarts)
+      - bot_cache:/app/data
+    networks:
+      - bot-network
+
+volumes:
+  postgres_data:
+    driver: local
+  bot_cache:
+    driver: local
+
+networks:
+  bot-network:
+    driver: bridge

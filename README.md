@@ -32,12 +32,78 @@ A high-performance Discord bot built with Bun, TypeScript, and Claude AI for int
 
 ## Prerequisites
 
+### Using Docker (Recommended)
+- [Docker](https://docs.docker.com/get-docker/) and [Docker Compose](https://docs.docker.com/compose/install/)
+- Discord Bot Token ([Create one here](https://discord.com/developers/applications))
+- Anthropic API Key ([Get one here](https://console.anthropic.com))
+
+### Manual Installation
 - [Bun](https://bun.sh) >= 1.0.0
 - PostgreSQL database
 - Discord Bot Token ([Create one here](https://discord.com/developers/applications))
 - Anthropic API Key ([Get one here](https://console.anthropic.com))
 
 ## Installation
+
+### Option 1: Docker (Recommended)
+
+The easiest way to run the bot with all dependencies included!
+
+1. **Set up environment variables**:
+   ```bash
+   cp .env.docker .env
+   ```
+
+   Edit `.env` and fill in your values:
+   ```env
+   DISCORD_BOT_TOKEN=your_discord_bot_token_here
+   DISCORD_CLIENT_ID=your_discord_client_id_here
+   RECOMMENDATIONS_CHANNEL_ID=your_recommendations_channel_id
+   PROCESSED_RECOMMENDATIONS_FORUM_ID=your_library_forum_channel_id
+   ANTHROPIC_API_KEY=your_anthropic_api_key_here
+   POSTGRES_PASSWORD=your_secure_password_here
+   ```
+
+2. **Start the bot**:
+   ```bash
+   docker-compose up -d
+   ```
+
+   This will:
+   - Pull and start PostgreSQL 17
+   - Build the bot Docker image
+   - Run database migrations automatically
+   - Start the bot
+
+3. **View logs**:
+   ```bash
+   # Follow bot logs
+   docker-compose logs -f bot
+
+   # View all logs
+   docker-compose logs -f
+   ```
+
+4. **Stop the bot**:
+   ```bash
+   docker-compose down
+   ```
+
+5. **Update and restart**:
+   ```bash
+   git pull
+   docker-compose up -d --build
+   ```
+
+**Docker Benefits:**
+- ✅ PostgreSQL included - no manual database setup
+- ✅ Automatic database migrations
+- ✅ Persistent data volumes
+- ✅ Easy updates and rollbacks
+- ✅ Isolated environment
+- ✅ Production-ready configuration
+
+### Option 2: Manual Installation
 
 1. **Clone and install dependencies**:
    ```bash
@@ -199,28 +265,78 @@ src/features/your-feature/
 
 ## Troubleshooting
 
-### Bot doesn't respond to messages
+### Docker Issues
+
+**Container won't start:**
+```bash
+# Check container logs
+docker-compose logs bot
+
+# Check database logs
+docker-compose logs postgres
+
+# Restart everything
+docker-compose down && docker-compose up -d
+```
+
+**Database connection errors:**
+```bash
+# Verify PostgreSQL is healthy
+docker-compose ps
+
+# If postgres is unhealthy, restart it
+docker-compose restart postgres
+
+# Check if migrations ran
+docker-compose exec bot bunx prisma db push
+```
+
+**Need to reset database:**
+```bash
+# Stop containers
+docker-compose down
+
+# Remove volumes (WARNING: deletes all data)
+docker volume rm discord-bot_postgres_data
+
+# Restart
+docker-compose up -d
+```
+
+### General Issues
+
+**Bot doesn't respond to messages:**
 - Verify `Message Content Intent` is enabled in Discord Developer Portal
 - Check that channel IDs are correct in `.env`
 - Ensure bot has permissions to read messages in the channel
+- Check logs: `docker-compose logs -f bot` (Docker) or check console output (manual)
 
-### Database connection errors
+**Database connection errors (Manual installation):**
 - Verify PostgreSQL is running
 - Check `DATABASE_URL` in `.env` is correct
 - Run `bun run db:push` to sync schema
 
-### Claude API errors
+**Claude API errors:**
 - Verify `ANTHROPIC_API_KEY` is valid
 - Check API quota/limits at console.anthropic.com
 - Review logs for specific error messages
 
-### Forum posts not created
+**Forum posts not created:**
 - Verify the forum channel exists and ID is correct
 - Ensure bot has "Create Public Threads" permission
 - Check bot has access to the forum channel
 
 ## Scripts
 
+### Docker Commands
+- `docker-compose up -d` - Start bot and database in background
+- `docker-compose down` - Stop all containers
+- `docker-compose logs -f bot` - Follow bot logs
+- `docker-compose logs -f postgres` - Follow database logs
+- `docker-compose up -d --build` - Rebuild and restart
+- `docker-compose exec bot bunx prisma studio` - Open Prisma Studio
+
+### Manual Installation (Bun)
 - `bun run dev` - Start bot in development mode with hot reload
 - `bun run start` - Start bot in production mode
 - `bun run db:generate` - Generate Prisma client

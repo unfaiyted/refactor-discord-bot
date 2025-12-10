@@ -9,7 +9,11 @@ class SQLiteCache {
   private db: Database;
 
   constructor(filename: string = 'cache.db') {
-    this.db = new Database(filename, { create: true });
+    // Use /app/data in Docker for persistent volume, otherwise use current directory
+    const isDocker = process.env.DOCKER_CONTAINER === 'true';
+    const dbPath = isDocker ? `/app/data/${filename}` : filename;
+
+    this.db = new Database(dbPath, { create: true });
     this.initialize();
   }
 
