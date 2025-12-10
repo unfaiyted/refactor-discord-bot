@@ -12,7 +12,7 @@ export async function handleRecommendationMessage(message: Message): Promise<voi
   try {
     logger.info('Handling recommendation message', {
       messageId: message.id,
-      author: message.author.tag
+      author: message.author.tag,
     });
 
     // Add a reaction to show we're processing
@@ -38,11 +38,7 @@ export async function handleRecommendationMessage(message: Message): Promise<voi
     );
 
     // Step 3: Update database with forum post info
-    await recommendationService.markAsProcessed(
-      processed.recommendationId,
-      postId,
-      threadId
-    );
+    await recommendationService.markAsProcessed(processed.recommendationId, postId, threadId);
 
     // Step 4: Add success reaction and remove processing reaction
     await message.reactions.removeAll().catch(() => {});
@@ -52,13 +48,12 @@ export async function handleRecommendationMessage(message: Message): Promise<voi
 
     logger.info('Successfully processed and posted recommendation', {
       recommendationId: processed.recommendationId,
-      forumThreadId: threadId
+      forumThreadId: threadId,
     });
-
   } catch (error) {
     logger.error('Error handling recommendation message', {
       messageId: message.id,
-      error
+      error,
     });
 
     // Add error reaction
@@ -70,8 +65,9 @@ export async function handleRecommendationMessage(message: Message): Promise<voi
     // Optionally, send a follow-up message explaining the error
     try {
       await message.reply({
-        content: '⚠️ Sorry, I encountered an error processing this recommendation. Please check the URL and try again.',
-        allowedMentions: { repliedUser: false }
+        content:
+          '⚠️ Sorry, I encountered an error processing this recommendation. Please check the URL and try again.',
+        allowedMentions: { repliedUser: false },
       });
     } catch (replyError) {
       logger.debug('Could not send error reply', replyError);

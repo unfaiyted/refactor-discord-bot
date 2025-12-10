@@ -41,21 +41,23 @@ class SQLiteCache {
    */
   set(key: string, value: any, ttl?: number): void {
     const valueStr = JSON.stringify(value);
-    const expiresAt = ttl ? Date.now() + (ttl * 1000) : null;
+    const expiresAt = ttl ? Date.now() + ttl * 1000 : null;
 
-    this.db.run(
-      'INSERT OR REPLACE INTO cache (key, value, expires_at) VALUES (?, ?, ?)',
-      [key, valueStr, expiresAt]
-    );
+    this.db.run('INSERT OR REPLACE INTO cache (key, value, expires_at) VALUES (?, ?, ?)', [
+      key,
+      valueStr,
+      expiresAt,
+    ]);
   }
 
   /**
    * Get a cache value
    */
   get<T = any>(key: string): T | null {
-    const row = this.db.query(
-      'SELECT value, expires_at FROM cache WHERE key = ?'
-    ).get(key) as { value: string; expires_at: number | null } | null;
+    const row = this.db.query('SELECT value, expires_at FROM cache WHERE key = ?').get(key) as {
+      value: string;
+      expires_at: number | null;
+    } | null;
 
     if (!row) {
       return null;
@@ -109,9 +111,12 @@ class SQLiteCache {
 export const cache = new SQLiteCache();
 
 // Auto-cleanup expired entries every 5 minutes
-setInterval(() => {
-  cache.clearExpired();
-}, 5 * 60 * 1000);
+setInterval(
+  () => {
+    cache.clearExpired();
+  },
+  5 * 60 * 1000
+);
 
 // Graceful shutdown
 process.on('SIGINT', () => {

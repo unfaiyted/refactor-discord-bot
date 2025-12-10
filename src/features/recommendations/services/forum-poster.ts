@@ -3,7 +3,7 @@ import {
   EmbedBuilder,
   ForumChannel,
   ThreadAutoArchiveDuration,
-  ChannelType
+  ChannelType,
 } from 'discord.js';
 import { env } from '@config/env.js';
 import { logger } from '@utils/logger.js';
@@ -19,7 +19,7 @@ const CONTENT_TYPE_EMOJI: Record<string, string> = {
   book: '📚',
   tool: '🛠️',
   course: '🎓',
-  other: '🔗'
+  other: '🔗',
 };
 
 /**
@@ -54,7 +54,7 @@ export async function createForumPost(
     // Get or create tags for content type
     const availableTags = forumChannel.availableTags;
     const contentTypeTag = availableTags.find(
-      tag => tag.name.toLowerCase() === recommendation.metadata.contentType.toLowerCase()
+      (tag) => tag.name.toLowerCase() === recommendation.metadata.contentType.toLowerCase()
     );
 
     // Build tags array (limit 5 tags per Discord)
@@ -65,9 +65,7 @@ export async function createForumPost(
 
     // Try to add topic tags if they exist
     for (const topic of recommendation.metadata.topics.slice(0, 4)) {
-      const topicTag = availableTags.find(
-        tag => tag.name.toLowerCase() === topic.toLowerCase()
-      );
+      const topicTag = availableTags.find((tag) => tag.name.toLowerCase() === topic.toLowerCase());
       if (topicTag && appliedTags.length < 5) {
         appliedTags.push(topicTag.id);
       }
@@ -75,7 +73,9 @@ export async function createForumPost(
 
     // Create rich embed
     const embed = new EmbedBuilder()
-      .setTitle(`${CONTENT_TYPE_EMOJI[recommendation.metadata.contentType] || '🔗'} ${recommendation.metadata.title}`)
+      .setTitle(
+        `${CONTENT_TYPE_EMOJI[recommendation.metadata.contentType] || '🔗'} ${recommendation.metadata.title}`
+      )
       .setDescription(recommendation.metadata.aiSummary)
       .setURL(recommendation.url)
       .setColor(getEmbedColor(recommendation.metadata.sentiment))
@@ -84,15 +84,18 @@ export async function createForumPost(
         {
           name: 'Quality',
           value: `${getQualityEmoji(recommendation.metadata.qualityScore)} ${recommendation.metadata.qualityScore}/10`,
-          inline: true
+          inline: true,
         },
         ...(recommendation.metadata.duration
           ? [{ name: 'Duration', value: recommendation.metadata.duration, inline: true }]
-          : []
-        ),
+          : []),
         { name: 'Topics', value: recommendation.metadata.topics.join(', ') },
         { name: 'Recommended by', value: recommenderTag, inline: true },
-        { name: 'Original Message', value: `[Jump to message](${originalMessageUrl})`, inline: true }
+        {
+          name: 'Original Message',
+          value: `[Jump to message](${originalMessageUrl})`,
+          inline: true,
+        }
       )
       .setTimestamp();
 
@@ -100,22 +103,21 @@ export async function createForumPost(
     const thread = await forumChannel.threads.create({
       name: recommendation.metadata.title.substring(0, 100), // Discord limit
       message: {
-        embeds: [embed]
+        embeds: [embed],
       },
       appliedTags,
-      autoArchiveDuration: ThreadAutoArchiveDuration.OneWeek
+      autoArchiveDuration: ThreadAutoArchiveDuration.OneWeek,
     });
 
     logger.info('Created forum post', {
       threadId: thread.id,
-      title: recommendation.metadata.title
+      title: recommendation.metadata.title,
     });
 
     return {
       postId: thread.id,
-      threadId: thread.id
+      threadId: thread.id,
     };
-
   } catch (error) {
     logger.error('Failed to create forum post', error);
     throw error;
@@ -151,7 +153,7 @@ export async function ensureForumTags(client: Client): Promise<void> {
     }
 
     const forumChannel = channel as ForumChannel;
-    const existingTags = forumChannel.availableTags.map(tag => tag.name.toLowerCase());
+    const existingTags = forumChannel.availableTags.map((tag) => tag.name.toLowerCase());
 
     const requiredTags = [
       { name: 'Video', emoji: '🎥' },
@@ -159,25 +161,24 @@ export async function ensureForumTags(client: Client): Promise<void> {
       { name: 'Article', emoji: '📰' },
       { name: 'Book', emoji: '📚' },
       { name: 'Tool', emoji: '🛠️' },
-      { name: 'Course', emoji: '🎓' }
+      { name: 'Course', emoji: '🎓' },
     ];
 
     const missingTags = requiredTags.filter(
-      tag => !existingTags.includes(tag.name.toLowerCase())
+      (tag) => !existingTags.includes(tag.name.toLowerCase())
     );
 
     if (missingTags.length > 0) {
       logger.info('Missing forum tags detected', {
-        missing: missingTags.map(t => t.name)
+        missing: missingTags.map((t) => t.name),
       });
       logger.warn('Please manually create these forum tags in Discord:');
-      missingTags.forEach(tag => {
+      missingTags.forEach((tag) => {
         logger.warn(`  - ${tag.emoji} ${tag.name}`);
       });
     } else {
       logger.info('All required forum tags are present');
     }
-
   } catch (error) {
     logger.error('Failed to check forum tags', error);
   }

@@ -17,7 +17,12 @@
     "docker:dev:down": "docker-compose down",
     "docker:dev:rebuild": "docker-compose down && docker-compose build --no-cache && docker-compose up -d",
     "docker:prod": "docker-compose -f docker-compose.yml up -d --build",
-    "docker:prod:down": "docker-compose -f docker-compose.yml down"
+    "docker:prod:down": "docker-compose -f docker-compose.yml down",
+    "prepare": "husky",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint:commits": "commitlint --edit",
+    "release": "semantic-release"
   },
   "keywords": [
     "discord",
@@ -37,7 +42,19 @@
     "dotenv": "^16.4.7"
   },
   "devDependencies": {
+    "@commitlint/cli": "^19.6.1",
+    "@commitlint/config-conventional": "^19.6.1",
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/commit-analyzer": "^13.0.0",
+    "@semantic-release/git": "^10.0.1",
+    "@semantic-release/github": "^11.0.0",
+    "@semantic-release/npm": "^12.0.1",
+    "@semantic-release/release-notes-generator": "^14.0.0",
     "@types/bun": "latest",
-    "prisma": "^6.1.0"
+    "conventional-changelog-conventionalcommits": "^9.1.0",
+    "husky": "^9.1.7",
+    "prettier": "^3.4.2",
+    "prisma": "^6.1.0",
+    "semantic-release": "^24.2.6"
   }
 }

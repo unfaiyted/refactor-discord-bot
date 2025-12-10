@@ -1,0 +1,33 @@
+# Dependencies
+node_modules/
+.bun/
+bun.lockb
+
+# Build output
+dist/
+build/
+
+# Database
+cache.db
+*.db
+*.db-journal
+
+# Logs
+logs/
+*.log
+
+# Environment files
+.env
+.env.*
+
+# Git
+.git/
+
+# Docker
+Dockerfile
+
+# Markdown (preserve formatting)
+CHANGELOG.md
+
+# Prisma generated files
+prisma/migrations/

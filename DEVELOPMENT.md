@@ -25,12 +25,14 @@ bun run docker:dev:down
 ### Docker Files
 
 **Unified Dockerfile with Build Targets:**
+
 - `Dockerfile` - Single file with multiple build targets:
   - `development` target: Full Debian environment with hot reload
   - `production-deps` target: Dependency build stage
   - `production` target: Optimized production build (default)
 
 **Compose Files:**
+
 - `docker-compose.yml` - Base configuration (uses `production` target)
 - `docker-compose.override.yml` - Development overrides (uses `development` target)
 
@@ -45,6 +47,7 @@ FROM ... AS production    # Production target (default)
 ```
 
 **To build a specific target manually:**
+
 ```bash
 # Build development image
 docker build --target development -t bot:dev .
@@ -55,6 +58,7 @@ docker build -t bot:prod .  # Same as above
 ```
 
 **In docker-compose**, targets are specified in the build section:
+
 ```yaml
 # docker-compose.yml (production)
 build:
@@ -78,6 +82,7 @@ docker-compose -f docker-compose.yml -f docker-compose.override.yml up
 ```
 
 **What gets overridden for development:**
+
 - Uses `development` build target instead of `production`
 - Mounts source code as volumes for hot reload
 - Sets `NODE_ENV=development` and `LOG_LEVEL=debug`
@@ -90,14 +95,15 @@ These directories are mounted from your local machine:
 
 ```yaml
 volumes:
-  - ./src:/app/src                      # Application code
-  - ./prisma:/app/prisma                # Database schema
-  - ./tsconfig.json:/app/tsconfig.json  # TypeScript config
-  - ./bunfig.toml:/app/bunfig.toml      # Bun config
-  - /app/node_modules                   # Exclude - use container's version
+  - ./src:/app/src # Application code
+  - ./prisma:/app/prisma # Database schema
+  - ./tsconfig.json:/app/tsconfig.json # TypeScript config
+  - ./bunfig.toml:/app/bunfig.toml # Bun config
+  - /app/node_modules # Exclude - use container's version
 ```
 
 **How it works:**
+
 1. You edit `src/index.ts` on your local machine
 2. Change is immediately reflected in the container (volume mount)
 3. Bun's `--watch` flag detects the change
@@ -124,6 +130,7 @@ bun run docker:dev:bg
 4. **Check logs** to see your changes in action
 
 Example:
+
 ```bash
 # Start in background
 bun run docker:dev:bg
@@ -264,18 +271,18 @@ docker-compose up -d
 
 ### Key Differences
 
-| Feature | Development | Production |
-|---------|------------|-----------|
-| **Dockerfile** | `Dockerfile` (same file) | `Dockerfile` (same file) |
-| **Build Target** | `development` | `production` (default) |
-| **Base Image** | Debian (full) | Slim (minimal) |
-| **Build Stages** | Single stage | Multi-stage (optimized) |
-| **Dependencies** | All (including dev) | Production only |
-| **Hot Reload** | ✅ Yes (volume mounts) | ❌ No |
-| **Logging** | `LOG_LEVEL=debug` | `LOG_LEVEL=info` |
-| **Restart Policy** | `no` | `unless-stopped` |
-| **Source Code** | Mounted volumes | Copied into image |
-| **Command** | `bun --watch src/index.ts` | `./docker-entrypoint.sh` |
+| Feature            | Development                | Production               |
+| ------------------ | -------------------------- | ------------------------ |
+| **Dockerfile**     | `Dockerfile` (same file)   | `Dockerfile` (same file) |
+| **Build Target**   | `development`              | `production` (default)   |
+| **Base Image**     | Debian (full)              | Slim (minimal)           |
+| **Build Stages**   | Single stage               | Multi-stage (optimized)  |
+| **Dependencies**   | All (including dev)        | Production only          |
+| **Hot Reload**     | ✅ Yes (volume mounts)     | ❌ No                    |
+| **Logging**        | `LOG_LEVEL=debug`          | `LOG_LEVEL=info`         |
+| **Restart Policy** | `no`                       | `unless-stopped`         |
+| **Source Code**    | Mounted volumes            | Copied into image        |
+| **Command**        | `bun --watch src/index.ts` | `./docker-entrypoint.sh` |
 
 ### Testing Production Build Locally
 
@@ -291,12 +298,14 @@ bun run docker:prod
 ### Hot Reload Not Working
 
 **Check volumes are mounted:**
+
 ```bash
 docker-compose exec bot ls -la /app/src
 # Should show your files with recent timestamps
 ```
 
 **Check Bun watch is running:**
+
 ```bash
 docker-compose logs bot | grep watch
 # Should see "bun --watch src/index.ts"
@@ -305,11 +314,13 @@ docker-compose logs bot | grep watch
 ### Changes Not Reflected
 
 **Force restart:**
+
 ```bash
 docker-compose restart bot
 ```
 
 **Check file permissions:**
+
 ```bash
 ls -la src/
 # Files should be readable
@@ -318,17 +329,20 @@ ls -la src/
 ### Database Connection Issues
 
 **Check PostgreSQL is healthy:**
+
 ```bash
 docker-compose ps postgres
 # Status should be "Up" and "healthy"
 ```
 
 **Restart database:**
+
 ```bash
 docker-compose restart postgres
 ```
 
 **View database logs:**
+
 ```bash
 docker-compose logs postgres
 ```
@@ -348,6 +362,7 @@ lsof -i :5432
 ## Best Practices
 
 ### DO:
+
 ✅ Use `bun run docker:dev` for development
 ✅ Keep `.env` file up to date
 ✅ Commit Prisma schema changes
@@ -355,6 +370,7 @@ lsof -i :5432
 ✅ Test in production mode before deploying
 
 ### DON'T:
+
 ❌ Edit files inside the container (use volumes)
 ❌ Commit `.env` file (use `.env.example`)
 ❌ Skip database migrations
@@ -364,6 +380,7 @@ lsof -i :5432
 ## Performance Tips
 
 1. **Use Background Mode** for faster iteration:
+
    ```bash
    bun run docker:dev:bg
    ```
@@ -373,6 +390,7 @@ lsof -i :5432
    - PostgreSQL data persists in volumes
 
 3. **Use Docker BuildKit** for faster builds:
+
    ```bash
    export DOCKER_BUILDKIT=1
    ```

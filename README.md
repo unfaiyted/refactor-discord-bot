@@ -33,11 +33,13 @@ A high-performance Discord bot built with Bun, TypeScript, and Claude AI for int
 ## Prerequisites
 
 ### Using Docker (Recommended)
+
 - [Docker](https://docs.docker.com/get-docker/) and [Docker Compose](https://docs.docker.com/compose/install/)
 - Discord Bot Token ([Create one here](https://discord.com/developers/applications))
 - Anthropic API Key ([Get one here](https://console.anthropic.com))
 
 ### Manual Installation
+
 - [Bun](https://bun.sh) >= 1.0.0
 - PostgreSQL database
 - Discord Bot Token ([Create one here](https://discord.com/developers/applications))
@@ -50,11 +52,13 @@ A high-performance Discord bot built with Bun, TypeScript, and Claude AI for int
 The easiest way to run the bot with all dependencies included!
 
 1. **Set up environment variables**:
+
    ```bash
    cp .env.docker .env
    ```
 
    Edit `.env` and fill in your values:
+
    ```env
    DISCORD_BOT_TOKEN=your_discord_bot_token_here
    DISCORD_CLIENT_ID=your_discord_client_id_here
@@ -65,6 +69,7 @@ The easiest way to run the bot with all dependencies included!
    ```
 
 2. **Start the bot**:
+
    ```bash
    docker-compose up -d
    ```
@@ -76,6 +81,7 @@ The easiest way to run the bot with all dependencies included!
    - Start the bot
 
 3. **View logs**:
+
    ```bash
    # Follow bot logs
    docker-compose logs -f bot
@@ -85,6 +91,7 @@ The easiest way to run the bot with all dependencies included!
    ```
 
 4. **Stop the bot**:
+
    ```bash
    docker-compose down
    ```
@@ -96,6 +103,7 @@ The easiest way to run the bot with all dependencies included!
    ```
 
 **Docker Benefits:**
+
 - ✅ PostgreSQL included - no manual database setup
 - ✅ Automatic database migrations
 - ✅ Persistent data volumes
@@ -106,17 +114,20 @@ The easiest way to run the bot with all dependencies included!
 ### Option 2: Manual Installation
 
 1. **Clone and install dependencies**:
+
    ```bash
    cd discord-bot
    bun install
    ```
 
 2. **Set up environment variables**:
+
    ```bash
    cp .env.example .env
    ```
 
    Edit `.env` and fill in your values:
+
    ```env
    DISCORD_BOT_TOKEN=your_discord_bot_token_here
    DISCORD_CLIENT_ID=your_discord_client_id_here
@@ -127,6 +138,7 @@ The easiest way to run the bot with all dependencies included!
    ```
 
 3. **Set up the database**:
+
    ```bash
    # Generate Prisma client
    bun run db:generate
@@ -151,11 +163,13 @@ The easiest way to run the bot with all dependencies included!
 ### 2. Invite Bot to Server
 
 Use this URL (replace `YOUR_CLIENT_ID`):
+
 ```
 https://discord.com/api/oauth2/authorize?client_id=YOUR_CLIENT_ID&permissions=412317273088&scope=bot
 ```
 
 Permissions included:
+
 - Read Messages/View Channels
 - Send Messages
 - Create Public Threads
@@ -208,6 +222,7 @@ bun run docker:dev:down
 ```
 
 **What you get:**
+
 - ✅ **Hot reloading** - Edit code and see changes instantly (no rebuild needed!)
 - ✅ **Debug logging** - LOG_LEVEL=debug automatically set
 - ✅ **PostgreSQL included** - Full database setup
@@ -215,6 +230,7 @@ bun run docker:dev:down
 - ✅ **Instant feedback** - Bun's `--watch` mode restarts on file changes
 
 **Development workflow:**
+
 ```bash
 # 1. Start development stack
 bun run docker:dev:bg
@@ -289,7 +305,9 @@ src/
 ## Database Schema
 
 ### Recommendations Table
+
 Stores all processed recommendations with metadata:
+
 - Original message info (ID, channel, content, author)
 - Extracted URL and basic info
 - AI-generated metadata (type, topics, duration, quality, sentiment)
@@ -297,9 +315,11 @@ Stores all processed recommendations with metadata:
 - Processing status and error tracking
 
 ### Guild Config Table
+
 Stores per-server configuration (for multi-server support)
 
 ### Processing Log Table
+
 Audit trail of all processing operations
 
 ## Adding New Features
@@ -312,6 +332,7 @@ This bot is built with extensibility in mind. To add new features:
 4. Register events in `src/index.ts`
 
 Example structure:
+
 ```
 src/features/your-feature/
 ├── events/
@@ -327,6 +348,7 @@ src/features/your-feature/
 ### Docker Issues
 
 **Container won't start:**
+
 ```bash
 # Check container logs
 docker-compose logs bot
@@ -339,6 +361,7 @@ docker-compose down && docker-compose up -d
 ```
 
 **Database connection errors:**
+
 ```bash
 # Verify PostgreSQL is healthy
 docker-compose ps
@@ -351,6 +374,7 @@ docker-compose exec bot bunx prisma db push
 ```
 
 **Need to reset database:**
+
 ```bash
 # Stop containers
 docker-compose down
@@ -365,22 +389,26 @@ docker-compose up -d
 ### General Issues
 
 **Bot doesn't respond to messages:**
+
 - Verify `Message Content Intent` is enabled in Discord Developer Portal
 - Check that channel IDs are correct in `.env`
 - Ensure bot has permissions to read messages in the channel
 - Check logs: `docker-compose logs -f bot` (Docker) or check console output (manual)
 
 **Database connection errors (Manual installation):**
+
 - Verify PostgreSQL is running
 - Check `DATABASE_URL` in `.env` is correct
 - Run `bun run db:push` to sync schema
 
 **Claude API errors:**
+
 - Verify `ANTHROPIC_API_KEY` is valid
 - Check API quota/limits at console.anthropic.com
 - Review logs for specific error messages
 
 **Forum posts not created:**
+
 - Verify the forum channel exists and ID is correct
 - Ensure bot has "Create Public Threads" permission
 - Check bot has access to the forum channel
@@ -388,6 +416,7 @@ docker-compose up -d
 ## Scripts
 
 ### Docker Development (Recommended for Development)
+
 - `bun run docker:dev` - Start dev environment with hot reload (foreground)
 - `bun run docker:dev:bg` - Start dev environment in background
 - `bun run docker:dev:logs` - Follow development logs
@@ -395,10 +424,12 @@ docker-compose up -d
 - `bun run docker:dev:rebuild` - Full rebuild (clears cache)
 
 ### Docker Production
+
 - `bun run docker:prod` - Start production stack
 - `bun run docker:prod:down` - Stop production stack
 
 ### Raw Docker Commands (Advanced)
+
 - `docker-compose up -d` - Start with override (dev mode)
 - `docker-compose -f docker-compose.yml up -d` - Start production only
 - `docker-compose down` - Stop all containers
@@ -407,6 +438,7 @@ docker-compose up -d
 - `docker-compose exec bot bunx prisma studio` - Open Prisma Studio
 
 ### Manual Installation (Bun)
+
 - `bun run dev` - Start bot in development mode with hot reload
 - `bun run start` - Start bot in production mode
 - `bun run db:generate` - Generate Prisma client
@@ -416,20 +448,21 @@ docker-compose up -d
 
 ## Environment Variables
 
-| Variable | Description | Required |
-|----------|-------------|----------|
-| `DISCORD_BOT_TOKEN` | Discord bot token from Developer Portal | Yes |
-| `DISCORD_CLIENT_ID` | Discord application client ID | Yes |
-| `RECOMMENDATIONS_CHANNEL_ID` | Channel to monitor for recommendations | Yes |
-| `PROCESSED_RECOMMENDATIONS_FORUM_ID` | Forum channel for processed posts | Yes |
-| `ANTHROPIC_API_KEY` | Claude API key from Anthropic | Yes |
-| `DATABASE_URL` | PostgreSQL connection string | Yes |
-| `NODE_ENV` | Environment (development/production) | No |
-| `LOG_LEVEL` | Logging level (debug/info/warn/error) | No |
+| Variable                             | Description                             | Required |
+| ------------------------------------ | --------------------------------------- | -------- |
+| `DISCORD_BOT_TOKEN`                  | Discord bot token from Developer Portal | Yes      |
+| `DISCORD_CLIENT_ID`                  | Discord application client ID           | Yes      |
+| `RECOMMENDATIONS_CHANNEL_ID`         | Channel to monitor for recommendations  | Yes      |
+| `PROCESSED_RECOMMENDATIONS_FORUM_ID` | Forum channel for processed posts       | Yes      |
+| `ANTHROPIC_API_KEY`                  | Claude API key from Anthropic           | Yes      |
+| `DATABASE_URL`                       | PostgreSQL connection string            | Yes      |
+| `NODE_ENV`                           | Environment (development/production)    | No       |
+| `LOG_LEVEL`                          | Logging level (debug/info/warn/error)   | No       |
 
 ## Performance
 
 Built with Bun for optimal performance:
+
 - **Fast startup**: ~3x faster cold starts than Node.js
 - **Native TypeScript**: No compilation step needed
 - **Built-in SQLite**: Ultra-fast caching layer
@@ -442,4 +475,44 @@ MIT
 
 ## Contributing
 
-This bot is designed for the Refactor Discord server but can be adapted for other communities. Feel free to fork and modify for your needs.
+We welcome contributions! This project uses **Conventional Commits** for automated versioning and releases.
+
+### Quick Start
+
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feat/your-feature`
+3. Make your changes with hot reload: `bun run docker:dev`
+4. Commit using conventional commits: `git commit -m "feat(scope): description"`
+5. Push and create a Pull Request
+
+### Commit Convention
+
+This project follows [Conventional Commits](https://www.conventionalcommits.org/):
+
+```
+<type>(<scope>): <subject>
+
+feat(recommendations): add Twitter link support
+fix(claude): handle rate limiting gracefully
+docs(readme): update installation steps
+```
+
+**Types**: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`
+
+Commits are automatically validated by **commitlint**. Breaking the convention will reject your commit.
+
+### Automated Releases
+
+- `feat:` commits trigger **minor** version bumps (1.x.0)
+- `fix:` commits trigger **patch** version bumps (1.0.x)
+- `BREAKING CHANGE:` triggers **major** version bumps (x.0.0)
+- Releases and changelogs are automated via **semantic-release**
+
+### For More Details
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for comprehensive guidelines on:
+
+- Development workflow
+- Commit message examples
+- Pull request process
+- Code style guidelines

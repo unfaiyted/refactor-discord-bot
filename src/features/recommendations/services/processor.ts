@@ -46,7 +46,7 @@ export async function processRecommendation(
     logger.info('Processing recommendation', {
       url: primaryURL.url,
       type: primaryURL.type,
-      author: message.author.tag
+      author: message.author.tag,
     });
 
     // Check if already processed
@@ -63,7 +63,7 @@ export async function processRecommendation(
       originalContent: message.content,
       recommenderId: message.author.id,
       recommenderName: message.author.tag,
-      url: primaryURL.url
+      url: primaryURL.url,
     });
 
     logger.debug('Created recommendation record', { recommendationId: recommendation.id });
@@ -85,13 +85,13 @@ export async function processRecommendation(
         duration: metadata.duration,
         qualityScore: metadata.qualityScore,
         sentiment: metadata.sentiment,
-        aiSummary: metadata.summary
+        aiSummary: metadata.summary,
       });
 
       const processingTime = Date.now() - startTime;
       logger.info('Successfully processed recommendation', {
         recommendationId: recommendation.id,
-        processingTime: `${processingTime}ms`
+        processingTime: `${processingTime}ms`,
       });
 
       return {
@@ -105,10 +105,9 @@ export async function processRecommendation(
           duration: metadata.duration,
           qualityScore: metadata.qualityScore,
           sentiment: metadata.sentiment,
-          aiSummary: metadata.summary
-        }
+          aiSummary: metadata.summary,
+        },
       };
-
     } catch (error) {
       // Record error in database
       await recommendationService.recordError(
@@ -118,12 +117,11 @@ export async function processRecommendation(
 
       logger.error('Failed to analyze recommendation', {
         recommendationId: recommendation.id,
-        error
+        error,
       });
 
       throw error;
     }
-
   } catch (error) {
     logger.error('Failed to process recommendation', error);
     return null;

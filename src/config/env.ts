@@ -33,15 +33,15 @@ function validateEnv(): EnvConfig {
     'RECOMMENDATIONS_CHANNEL_ID',
     'PROCESSED_RECOMMENDATIONS_FORUM_ID',
     'ANTHROPIC_API_KEY',
-    'DATABASE_URL'
+    'DATABASE_URL',
   ];
 
-  const missing = required.filter(key => !process.env[key]);
+  const missing = required.filter((key) => !process.env[key]);
 
   if (missing.length > 0) {
     throw new Error(
       `Missing required environment variables: ${missing.join(', ')}\n` +
-      'Please copy .env.example to .env and fill in the required values.'
+        'Please copy .env.example to .env and fill in the required values.'
     );
   }
 
@@ -50,18 +50,18 @@ function validateEnv(): EnvConfig {
       token: process.env.DISCORD_BOT_TOKEN!,
       clientId: process.env.DISCORD_CLIENT_ID!,
       recommendationsChannelId: process.env.RECOMMENDATIONS_CHANNEL_ID!,
-      processedRecommendationsForumId: process.env.PROCESSED_RECOMMENDATIONS_FORUM_ID!
+      processedRecommendationsForumId: process.env.PROCESSED_RECOMMENDATIONS_FORUM_ID!,
     },
     anthropic: {
-      apiKey: process.env.ANTHROPIC_API_KEY!
+      apiKey: process.env.ANTHROPIC_API_KEY!,
     },
     database: {
-      url: process.env.DATABASE_URL!
+      url: process.env.DATABASE_URL!,
     },
     app: {
       nodeEnv: process.env.NODE_ENV || 'development',
-      logLevel: process.env.LOG_LEVEL || 'info'
-    }
+      logLevel: process.env.LOG_LEVEL || 'info',
+    },
   };
 }
 

@@ -13,9 +13,9 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      - '5432:5432'
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U refactor -d refactor_bot"]
+      test: ['CMD-SHELL', 'pg_isready -U refactor -d refactor_bot']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -27,7 +27,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      target: production  # Use production build target
+      target: production # Use production build target
     container_name: refactor-bot
     restart: unless-stopped
     depends_on:
@@ -49,7 +49,7 @@ services:
       # Application Configuration
       NODE_ENV: ${NODE_ENV:-production}
       LOG_LEVEL: ${LOG_LEVEL:-info}
-      DOCKER_CONTAINER: "true"
+      DOCKER_CONTAINER: 'true'
     volumes:
       # Mount for SQLite cache (optional, for persistence across restarts)
       - bot_cache:/app/data

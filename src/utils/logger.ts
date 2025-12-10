@@ -4,17 +4,17 @@ type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
 const COLORS = {
   debug: '\x1b[36m', // Cyan
-  info: '\x1b[32m',  // Green
-  warn: '\x1b[33m',  // Yellow
+  info: '\x1b[32m', // Green
+  warn: '\x1b[33m', // Yellow
   error: '\x1b[31m', // Red
-  reset: '\x1b[0m'
+  reset: '\x1b[0m',
 };
 
 const LOG_LEVELS: Record<LogLevel, number> = {
   debug: 0,
   info: 1,
   warn: 2,
-  error: 3
+  error: 3,
 };
 
 class Logger {
@@ -62,9 +62,7 @@ class Logger {
 
   error(message: string, error?: Error | any): void {
     if (this.shouldLog('error')) {
-      const meta = error instanceof Error
-        ? { message: error.message, stack: error.stack }
-        : error;
+      const meta = error instanceof Error ? { message: error.message, stack: error.stack } : error;
       console.error(this.formatMessage('error', message, meta));
     }
   }

@@ -14,12 +14,14 @@ Get your Refactor Discord Bot up and running in 5 minutes!
 ### Step 1: Install Docker
 
 If you don't have Docker installed:
+
 - **macOS/Windows**: Download [Docker Desktop](https://www.docker.com/products/docker-desktop)
 - **Linux**: Follow [Docker Engine installation](https://docs.docker.com/engine/install/)
 
 ### Step 2: Get Your API Keys
 
 #### Discord Bot Token
+
 1. Go to https://discord.com/developers/applications
 2. Click "New Application" → Name it "Refactor Bot"
 3. Go to "Bot" tab → Click "Add Bot"
@@ -27,6 +29,7 @@ If you don't have Docker installed:
 5. Click "Reset Token" and copy it
 
 #### Anthropic API Key
+
 1. Go to https://console.anthropic.com
 2. Sign up or log in
 3. Go to API Keys
@@ -39,6 +42,7 @@ cp .env.docker .env
 ```
 
 Edit `.env` and paste your keys:
+
 ```env
 DISCORD_BOT_TOKEN=paste_your_discord_token_here
 DISCORD_CLIENT_ID=paste_your_client_id_here
@@ -51,6 +55,7 @@ POSTGRES_PASSWORD=choose_a_secure_password
 ### Step 4: Set Up Discord Server
 
 1. **Invite the bot** (replace YOUR_CLIENT_ID):
+
    ```
    https://discord.com/api/oauth2/authorize?client_id=YOUR_CLIENT_ID&permissions=412317273088&scope=bot
    ```
@@ -124,6 +129,7 @@ bun install
 ## Step 3: Get Your API Keys
 
 ### Discord Bot Token
+
 1. Go to https://discord.com/developers/applications
 2. Click "New Application" → Name it "Refactor Bot"
 3. Go to "Bot" tab → Click "Add Bot"
@@ -131,6 +137,7 @@ bun install
 5. Click "Reset Token" and copy it
 
 ### Anthropic API Key
+
 1. Go to https://console.anthropic.com
 2. Sign up or log in
 3. Go to API Keys
@@ -143,6 +150,7 @@ cp .env.example .env
 ```
 
 Edit `.env` and paste your keys:
+
 ```env
 DISCORD_BOT_TOKEN=paste_your_discord_token_here
 DISCORD_CLIENT_ID=paste_your_client_id_here
@@ -155,6 +163,7 @@ DATABASE_URL=postgresql://user:password@localhost:5432/refactor_bot
 ## Step 5: Set Up PostgreSQL
 
 ### Option A: Local PostgreSQL
+
 ```bash
 # Install PostgreSQL (macOS)
 brew install postgresql
@@ -165,6 +174,7 @@ createdb refactor_bot
 ```
 
 ### Option B: Use a Cloud Database
+
 Services like [Supabase](https://supabase.com), [Railway](https://railway.app), or [Neon](https://neon.tech) offer free PostgreSQL databases.
 
 Update `DATABASE_URL` in `.env` with your connection string.
@@ -179,6 +189,7 @@ bun run db:push
 ## Step 7: Set Up Discord Server
 
 1. **Invite the bot** (replace YOUR_CLIENT_ID):
+
    ```
    https://discord.com/api/oauth2/authorize?client_id=YOUR_CLIENT_ID&permissions=412317273088&scope=bot
    ```
@@ -211,6 +222,7 @@ bun run dev
 ```
 
 You should see:
+
 ```
 [INFO] Starting Refactor Discord Bot...
 [INFO] Bot is ready! Logged in as Refactor Bot#1234
@@ -232,14 +244,17 @@ You should see:
 ## Troubleshooting
 
 **Bot doesn't see messages?**
+
 - Make sure "Message Content Intent" is enabled in Discord Developer Portal
 - Restart the bot after enabling
 
 **Database errors?**
+
 - Verify PostgreSQL is running: `pg_isready`
 - Check DATABASE_URL is correct
 
 **Claude API errors?**
+
 - Verify API key is correct
 - Check you have credits at console.anthropic.com
 

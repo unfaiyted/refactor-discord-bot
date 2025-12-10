@@ -63,9 +63,9 @@ export function detectContentType(url: string): ExtractedURL['type'] {
  */
 export function extractURLsWithTypes(text: string): ExtractedURL[] {
   const urls = extractURLs(text);
-  return urls.map(url => ({
+  return urls.map((url) => ({
     url,
-    type: detectContentType(url)
+    type: detectContentType(url),
   }));
 }
 
@@ -76,7 +76,7 @@ export async function validateURL(url: string): Promise<boolean> {
   try {
     const response = await fetch(url, {
       method: 'HEAD',
-      signal: AbortSignal.timeout(5000) // 5 second timeout
+      signal: AbortSignal.timeout(5000), // 5 second timeout
     });
     return response.ok;
   } catch {

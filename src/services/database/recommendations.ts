@@ -27,7 +27,7 @@ export class RecommendationService {
    */
   async create(data: CreateRecommendationData): Promise<Recommendation> {
     return prisma.recommendation.create({
-      data
+      data,
     });
   }
 
@@ -36,7 +36,7 @@ export class RecommendationService {
    */
   async findByMessageId(messageId: string): Promise<Recommendation | null> {
     return prisma.recommendation.findUnique({
-      where: { originalMessageId: messageId }
+      where: { originalMessageId: messageId },
     });
   }
 
@@ -49,7 +49,7 @@ export class RecommendationService {
   ): Promise<Recommendation> {
     return prisma.recommendation.update({
       where: { id: recommendationId },
-      data: metadata
+      data: metadata,
     });
   }
 
@@ -67,28 +67,25 @@ export class RecommendationService {
         processed: true,
         processedAt: new Date(),
         forumPostId,
-        forumThreadId
-      }
+        forumThreadId,
+      },
     });
   }
 
   /**
    * Record processing error
    */
-  async recordError(
-    recommendationId: string,
-    error: string
-  ): Promise<Recommendation> {
+  async recordError(recommendationId: string, error: string): Promise<Recommendation> {
     const current = await prisma.recommendation.findUnique({
-      where: { id: recommendationId }
+      where: { id: recommendationId },
     });
 
     return prisma.recommendation.update({
       where: { id: recommendationId },
       data: {
         processingError: error,
-        processingAttempts: (current?.processingAttempts || 0) + 1
-      }
+        processingAttempts: (current?.processingAttempts || 0) + 1,
+      },
     });
   }
 
@@ -99,10 +96,10 @@ export class RecommendationService {
     return prisma.recommendation.findMany({
       where: {
         processed: false,
-        processingAttempts: { lt: 3 } // Max 3 retry attempts
+        processingAttempts: { lt: 3 }, // Max 3 retry attempts
       },
       take: limit,
-      orderBy: { createdAt: 'asc' }
+      orderBy: { createdAt: 'asc' },
     });
   }
 
@@ -120,12 +117,12 @@ export class RecommendationService {
         ...(filters.contentType && { contentType: filters.contentType }),
         ...(filters.topics && {
           topics: {
-            hasSome: filters.topics
-          }
-        })
+            hasSome: filters.topics,
+          },
+        }),
       },
       take: filters.limit || 20,
-      orderBy: { createdAt: 'desc' }
+      orderBy: { createdAt: 'desc' },
     });
   }
 }

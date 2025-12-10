@@ -10,16 +10,16 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      target: development  # Use development build target
+      target: development # Use development build target
 
     # Mount source code as volumes for hot reloading
     # Changes to these files will immediately reflect in the container
     volumes:
-      - ./src:/app/src                      # Application source code
-      - ./prisma:/app/prisma                # Database schema
-      - ./tsconfig.json:/app/tsconfig.json  # TypeScript config
-      - ./bunfig.toml:/app/bunfig.toml      # Bun config
-      - bot_cache:/app/data                 # Persist cache across restarts
+      - ./src:/app/src # Application source code
+      - ./prisma:/app/prisma # Database schema
+      - ./tsconfig.json:/app/tsconfig.json # TypeScript config
+      - ./bunfig.toml:/app/bunfig.toml # Bun config
+      - bot_cache:/app/data # Persist cache across restarts
 
       # Exclude node_modules from mount - use container's version
       - /app/node_modules
@@ -40,14 +40,14 @@ services:
 
       # Development Configuration
       NODE_ENV: development
-      LOG_LEVEL: debug  # More verbose logging for development
-      DOCKER_CONTAINER: "true"
+      LOG_LEVEL: debug # More verbose logging for development
+      DOCKER_CONTAINER: 'true'
 
     # Override command to use Bun's watch mode
-    command: ["bun", "--watch", "src/index.ts"]
+    command: ['bun', '--watch', 'src/index.ts']
 
     # Use default restart policy for dev (no automatic restart)
-    restart: "no"
+    restart: 'no'
 
   # PostgreSQL stays the same - no overrides needed
   # The production config from docker-compose.yml is used

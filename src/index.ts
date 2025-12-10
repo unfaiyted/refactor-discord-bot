@@ -11,8 +11,8 @@ const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.MessageContent
-  ]
+    GatewayIntentBits.MessageContent,
+  ],
 });
 
 /**
@@ -39,7 +39,7 @@ client.on(Events.MessageCreate, async (message) => {
 
   logger.debug('New message in recommendations channel', {
     author: message.author.tag,
-    content: message.content.substring(0, 100)
+    content: message.content.substring(0, 100),
   });
 
   try {

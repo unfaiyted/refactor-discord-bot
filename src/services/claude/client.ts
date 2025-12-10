@@ -6,7 +6,7 @@ import { logger } from '@utils/logger.js';
  * Claude AI client singleton
  */
 export const anthropic = new Anthropic({
-  apiKey: env.anthropic.apiKey
+  apiKey: env.anthropic.apiKey,
 });
 
 export interface RecommendationMetadata {
@@ -62,10 +62,12 @@ Respond ONLY with valid JSON in this exact format:
     const message = await anthropic.messages.create({
       model: 'claude-sonnet-4-20250514',
       max_tokens: 1024,
-      messages: [{
-        role: 'user',
-        content: prompt
-      }]
+      messages: [
+        {
+          role: 'user',
+          content: prompt,
+        },
+      ],
     });
 
     const content = message.content[0];
@@ -83,7 +85,6 @@ Respond ONLY with valid JSON in this exact format:
 
     logger.debug('Successfully analyzed recommendation', { metadata });
     return metadata;
-
   } catch (error) {
     logger.error('Failed to analyze recommendation with Claude', error);
     throw error;
