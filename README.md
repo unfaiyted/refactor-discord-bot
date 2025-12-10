@@ -189,12 +189,71 @@ Permissions included:
 
 ## Running the Bot
 
-### Development Mode (with hot reload):
+### Docker Development Mode (Recommended for Development)
+
+**Best for:** Local development with hot reloading and database included
+
 ```bash
+# Start development environment (foreground with logs)
+bun run docker:dev
+
+# Or start in background
+bun run docker:dev:bg
+
+# View logs
+bun run docker:dev:logs
+
+# Stop development environment
+bun run docker:dev:down
+```
+
+**What you get:**
+- ✅ **Hot reloading** - Edit code and see changes instantly (no rebuild needed!)
+- ✅ **Debug logging** - LOG_LEVEL=debug automatically set
+- ✅ **PostgreSQL included** - Full database setup
+- ✅ **Volume mounts** - `src/`, `prisma/`, and config files mounted for live updates
+- ✅ **Instant feedback** - Bun's `--watch` mode restarts on file changes
+
+**Development workflow:**
+```bash
+# 1. Start development stack
+bun run docker:dev:bg
+
+# 2. Make changes to src/index.ts or any other file
+# → Bot automatically restarts with your changes!
+
+# 3. View logs to see your changes
+bun run docker:dev:logs
+
+# 4. When done
+bun run docker:dev:down
+```
+
+### Manual Development Mode (with hot reload)
+
+**Best for:** Development without Docker
+
+```bash
+# Requires local PostgreSQL running
 bun run dev
 ```
 
-### Production Mode:
+### Docker Production Mode
+
+**Best for:** Production deployment
+
+```bash
+# Start production stack
+bun run docker:prod
+
+# Stop production stack
+bun run docker:prod:down
+```
+
+### Manual Production Mode
+
+**Best for:** Running without Docker
+
 ```bash
 bun run start
 ```
@@ -328,12 +387,23 @@ docker-compose up -d
 
 ## Scripts
 
-### Docker Commands
-- `docker-compose up -d` - Start bot and database in background
+### Docker Development (Recommended for Development)
+- `bun run docker:dev` - Start dev environment with hot reload (foreground)
+- `bun run docker:dev:bg` - Start dev environment in background
+- `bun run docker:dev:logs` - Follow development logs
+- `bun run docker:dev:down` - Stop development environment
+- `bun run docker:dev:rebuild` - Full rebuild (clears cache)
+
+### Docker Production
+- `bun run docker:prod` - Start production stack
+- `bun run docker:prod:down` - Stop production stack
+
+### Raw Docker Commands (Advanced)
+- `docker-compose up -d` - Start with override (dev mode)
+- `docker-compose -f docker-compose.yml up -d` - Start production only
 - `docker-compose down` - Stop all containers
 - `docker-compose logs -f bot` - Follow bot logs
 - `docker-compose logs -f postgres` - Follow database logs
-- `docker-compose up -d --build` - Rebuild and restart
 - `docker-compose exec bot bunx prisma studio` - Open Prisma Studio
 
 ### Manual Installation (Bun)

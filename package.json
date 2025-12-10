@@ -10,7 +10,14 @@
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "docker:dev": "docker-compose up --build",
+    "docker:dev:bg": "docker-compose up -d --build",
+    "docker:dev:logs": "docker-compose logs -f bot",
+    "docker:dev:down": "docker-compose down",
+    "docker:dev:rebuild": "docker-compose down && docker-compose build --no-cache && docker-compose up -d",
+    "docker:prod": "docker-compose -f docker-compose.yml up -d --build",
+    "docker:prod:down": "docker-compose -f docker-compose.yml down"
   },
   "keywords": [
     "discord",

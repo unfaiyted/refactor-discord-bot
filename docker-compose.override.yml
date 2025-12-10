@@ -1,0 +1,52 @@
+# Docker Compose override for local development
+# This file is automatically used by docker-compose when present
+# It overrides settings in docker-compose.yml for development workflow
+
+version: '3.8'
+
+services:
+  bot:
+    # Use development Dockerfile with hot reload support
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+
+    # Mount source code as volumes for hot reloading
+    # Changes to these files will immediately reflect in the container
+    volumes:
+      - ./src:/app/src                      # Application source code
+      - ./prisma:/app/prisma                # Database schema
+      - ./tsconfig.json:/app/tsconfig.json  # TypeScript config
+      - ./bunfig.toml:/app/bunfig.toml      # Bun config
+      - bot_cache:/app/data                 # Persist cache across restarts
+
+      # Exclude node_modules from mount - use container's version
+      - /app/node_modules
+
+    # Override environment variables for development
+    environment:
+      # Discord Configuration
+      DISCORD_BOT_TOKEN: ${DISCORD_BOT_TOKEN}
+      DISCORD_CLIENT_ID: ${DISCORD_CLIENT_ID}
+      RECOMMENDATIONS_CHANNEL_ID: ${RECOMMENDATIONS_CHANNEL_ID}
+      PROCESSED_RECOMMENDATIONS_FORUM_ID: ${PROCESSED_RECOMMENDATIONS_FORUM_ID}
+
+      # Claude AI Configuration
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+
+      # Database Configuration
+      DATABASE_URL: postgresql://refactor:${POSTGRES_PASSWORD:-changeme}@postgres:5432/refactor_bot?schema=public
+
+      # Development Configuration
+      NODE_ENV: development
+      LOG_LEVEL: debug  # More verbose logging for development
+      DOCKER_CONTAINER: "true"
+
+    # Override command to use Bun's watch mode
+    command: ["bun", "--watch", "src/index.ts"]
+
+    # Use default restart policy for dev (no automatic restart)
+    restart: "no"
+
+  # PostgreSQL stays the same - no overrides needed
+  # The production config from docker-compose.yml is used
