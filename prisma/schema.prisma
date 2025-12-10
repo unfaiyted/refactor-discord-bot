@@ -1,0 +1,82 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Recommendation {
+  id                String   @id @default(cuid())
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Original message info
+  originalMessageId String   @unique
+  originalChannelId String
+  originalContent   String   @db.Text
+  recommenderId     String
+  recommenderName   String
+
+  // Extracted URL and content info
+  url               String   @db.Text
+  title             String?  @db.Text
+  description       String?  @db.Text
+
+  // AI-extracted metadata
+  contentType       String?  // video, podcast, article, book, tool, etc.
+  topics            String[] // Array of topic/category tags
+  duration          String?  // Duration or length (e.g., "45 minutes", "300 pages")
+  qualityScore      Float?   // 0-10 quality score from AI
+  sentiment         String?  // positive, neutral, informative, etc.
+  aiSummary         String?  @db.Text
+
+  // Forum post info
+  forumPostId       String?  @unique
+  forumThreadId     String?  @unique
+
+  // Processing status
+  processed         Boolean  @default(false)
+  processingError   String?  @db.Text
+  processingAttempts Int     @default(0)
+  processedAt       DateTime?
+
+  @@index([recommenderId])
+  @@index([contentType])
+  @@index([processed])
+  @@index([createdAt])
+  @@map("recommendations")
+}
+
+model GuildConfig {
+  id                            String   @id @default(cuid())
+  guildId                       String   @unique
+  createdAt                     DateTime @default(now())
+  updatedAt                     DateTime @updatedAt
+
+  // Channel configuration
+  recommendationsChannelId      String?
+  processedRecommendationsForumId String?
+
+  // Feature flags
+  autoProcessingEnabled         Boolean  @default(true)
+  aiAnalysisEnabled             Boolean  @default(true)
+
+  @@map("guild_configs")
+}
+
+model ProcessingLog {
+  id                String   @id @default(cuid())
+  createdAt         DateTime @default(now())
+
+  recommendationId  String?
+  operation         String   // "extract_url", "ai_analysis", "forum_post", etc.
+  status            String   // "success", "error", "retry"
+  message           String?  @db.Text
+  metadata          Json?    // Additional context as JSON
+
+  @@index([recommendationId])
+  @@index([createdAt])
+  @@map("processing_logs")
+}
