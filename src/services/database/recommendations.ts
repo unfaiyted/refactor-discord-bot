@@ -19,6 +19,7 @@ export interface UpdateRecommendationMetadata {
   qualityScore?: number;
   sentiment?: string;
   aiSummary?: string;
+  thumbnail?: string;
 }
 
 export class RecommendationService {

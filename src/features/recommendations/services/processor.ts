@@ -1,5 +1,7 @@
-import { analyzeRecommendation } from '@services/claude/client.js';
+import { analyzeRecommendation, analyzeExtractedContent } from '@services/claude/client.js';
 import { recommendationService } from '@services/database/recommendations.js';
+import { contentExtractor } from '@services/content/content-extractor.js';
+import { ContentExtractionError } from '@services/content/types.js';
 import { logger } from '@utils/logger.js';
 import { extractURLsWithTypes } from '@utils/url-extractor.js';
 import type { Message } from 'discord.js';
@@ -16,6 +18,10 @@ export interface ProcessedRecommendation {
     qualityScore: number;
     sentiment: string;
     aiSummary: string;
+    keyTakeaways?: string[];
+    mainIdeas?: string[];
+    tldr?: string;
+    thumbnail?: string;
   };
 }
 
@@ -68,13 +74,49 @@ export async function processRecommendation(
 
     logger.debug('Created recommendation record', { recommendationId: recommendation.id });
 
-    // Analyze with Claude AI
+    // Extract content from URL and analyze with Claude AI
     try {
-      const metadata = await analyzeRecommendation(
-        primaryURL.url,
-        message.content,
-        message.author.tag
-      );
+      let metadata;
+      let thumbnail: string | undefined;
+
+      // Try to extract content first
+      try {
+        logger.info('Extracting content from URL', { url: primaryURL.url });
+        const extractedContent = await contentExtractor.extract(primaryURL.url);
+
+        logger.info('Content extracted successfully', {
+          url: primaryURL.url,
+          type: extractedContent.type,
+          contentLength: extractedContent.content.length,
+          hasThumbnail: !!extractedContent.metadata?.thumbnail,
+        });
+
+        // Save thumbnail from extracted content
+        thumbnail = extractedContent.metadata?.thumbnail;
+
+        // Analyze with full content
+        metadata = await analyzeExtractedContent(
+          extractedContent,
+          message.content,
+          message.author.tag
+        );
+      } catch (extractionError) {
+        // Fallback to URL-only analysis if extraction fails
+        if (extractionError instanceof ContentExtractionError) {
+          logger.warn('Content extraction failed, using URL-only analysis', {
+            url: primaryURL.url,
+            error: extractionError.message,
+          });
+
+          metadata = await analyzeRecommendation(
+            primaryURL.url,
+            message.content,
+            message.author.tag
+          );
+        } else {
+          throw extractionError;
+        }
+      }
 
       // Update database with AI-extracted metadata
       await recommendationService.updateMetadata(recommendation.id, {
@@ -86,12 +128,14 @@ export async function processRecommendation(
         qualityScore: metadata.qualityScore,
         sentiment: metadata.sentiment,
         aiSummary: metadata.summary,
+        thumbnail, // Add thumbnail from extracted content
       });
 
       const processingTime = Date.now() - startTime;
       logger.info('Successfully processed recommendation', {
         recommendationId: recommendation.id,
         processingTime: `${processingTime}ms`,
+        hasEnhancedData: !!(metadata.keyTakeaways && metadata.mainIdeas),
       });
 
       return {
@@ -106,6 +150,10 @@ export async function processRecommendation(
           qualityScore: metadata.qualityScore,
           sentiment: metadata.sentiment,
           aiSummary: metadata.summary,
+          keyTakeaways: metadata.keyTakeaways,
+          mainIdeas: metadata.mainIdeas,
+          tldr: metadata.tldr,
+          thumbnail, // Include thumbnail in returned metadata
         },
       };
     } catch (error) {

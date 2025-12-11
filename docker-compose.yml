@@ -31,23 +31,18 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    env_file:
+      - .env
     environment:
-      # Discord Configuration
-      DISCORD_BOT_TOKEN: ${DISCORD_BOT_TOKEN}
-      DISCORD_CLIENT_ID: ${DISCORD_CLIENT_ID}
-      RECOMMENDATIONS_CHANNEL_ID: ${RECOMMENDATIONS_CHANNEL_ID}
-      PROCESSED_RECOMMENDATIONS_FORUM_ID: ${PROCESSED_RECOMMENDATIONS_FORUM_ID}
-
-      # Claude AI Configuration
-      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
-
-      # Database Configuration
+      # Override database URL to use internal Docker network
       DATABASE_URL: postgresql://refactor:${POSTGRES_PASSWORD:-changeme}@postgres:5432/refactor_bot?schema=public
 
-      # Application Configuration
+      # Docker-specific flag
+      DOCKER_CONTAINER: 'true'
+
+      # Default to production if not set in .env
       NODE_ENV: ${NODE_ENV:-production}
       LOG_LEVEL: ${LOG_LEVEL:-info}
-      DOCKER_CONTAINER: 'true'
     volumes:
       # Mount for SQLite cache (optional, for persistence across restarts)
       - bot_cache:/app/data

@@ -31,6 +31,7 @@ model Recommendation {
   qualityScore      Float?   // 0-10 quality score from AI
   sentiment         String?  // positive, neutral, informative, etc.
   aiSummary         String?  @db.Text
+  thumbnail         String?  @db.Text // URL to thumbnail/preview image
 
   // Forum post info
   forumPostId       String?  @unique

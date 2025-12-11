@@ -71,12 +71,18 @@ export async function createForumPost(
       }
     }
 
+    // Build embed description with TL;DR if available
+    let description = recommendation.metadata.aiSummary;
+    if (recommendation.metadata.tldr) {
+      description = `**TL;DR:** ${recommendation.metadata.tldr}\n\n${recommendation.metadata.aiSummary}`;
+    }
+
     // Create rich embed
-    const embed = new EmbedBuilder()
+    const embedBuilder = new EmbedBuilder()
       .setTitle(
         `${CONTENT_TYPE_EMOJI[recommendation.metadata.contentType] || '🔗'} ${recommendation.metadata.title}`
       )
-      .setDescription(recommendation.metadata.aiSummary)
+      .setDescription(description)
       .setURL(recommendation.url)
       .setColor(getEmbedColor(recommendation.metadata.sentiment))
       .addFields(
@@ -89,15 +95,41 @@ export async function createForumPost(
         ...(recommendation.metadata.duration
           ? [{ name: 'Duration', value: recommendation.metadata.duration, inline: true }]
           : []),
-        { name: 'Topics', value: recommendation.metadata.topics.join(', ') },
-        { name: 'Recommended by', value: recommenderTag, inline: true },
-        {
-          name: 'Original Message',
-          value: `[Jump to message](${originalMessageUrl})`,
-          inline: true,
-        }
-      )
-      .setTimestamp();
+        { name: 'Topics', value: recommendation.metadata.topics.join(', ') }
+      );
+
+    // Add key takeaways if available
+    if (recommendation.metadata.keyTakeaways && recommendation.metadata.keyTakeaways.length > 0) {
+      embedBuilder.addFields({
+        name: '📝 Key Takeaways',
+        value: recommendation.metadata.keyTakeaways.map((t) => `• ${t}`).join('\n'),
+      });
+    }
+
+    // Add main ideas if available
+    if (recommendation.metadata.mainIdeas && recommendation.metadata.mainIdeas.length > 0) {
+      embedBuilder.addFields({
+        name: '💡 Main Ideas',
+        value: recommendation.metadata.mainIdeas.map((i) => `• ${i}`).join('\n'),
+      });
+    }
+
+    // Add thumbnail if available (shows in gallery view)
+    if (recommendation.metadata.thumbnail) {
+      embedBuilder.setImage(recommendation.metadata.thumbnail);
+    }
+
+    // Add recommender info at the end
+    embedBuilder.addFields(
+      { name: 'Recommended by', value: recommenderTag, inline: true },
+      {
+        name: 'Original Message',
+        value: `[Jump to message](${originalMessageUrl})`,
+        inline: true,
+      }
+    );
+
+    const embed = embedBuilder.setTimestamp();
 
     // Create forum thread
     const thread = await forumChannel.threads.create({
