@@ -34,6 +34,58 @@ function getQualityEmoji(score: number): string {
 }
 
 /**
+ * Tag synonyms and related terms for better matching
+ */
+const TAG_SYNONYMS: Record<string, string[]> = {
+  health: ['wellness', 'medical', 'healthcare', 'wellbeing'],
+  fitness: ['exercise', 'workout', 'training', 'physical'],
+  tech: ['technology', 'software', 'programming', 'coding', 'development'],
+  ai: ['artificial intelligence', 'machine learning', 'ml', 'llm', 'gpt'],
+  relationships: ['dating', 'marriage', 'family', 'social'],
+  psychology: ['mental', 'mindset', 'cognitive', 'behavioral'],
+  nutrition: ['diet', 'eating', 'food', 'meal'],
+  productivity: ['efficiency', 'time management', 'organization', 'gtd'],
+  business: ['entrepreneurship', 'startup', 'commerce', 'enterprise'],
+  career: ['job', 'work', 'professional', 'employment'],
+  science: ['research', 'scientific', 'biology', 'chemistry', 'physics'],
+  'mental health': ['therapy', 'anxiety', 'depression', 'stress', 'mindfulness'],
+  'self-improvement': ['personal development', 'growth', 'self-help', 'improvement'],
+};
+
+/**
+ * Find best matching tag using fuzzy matching and synonyms
+ */
+function findBestMatchingTag(
+  topic: string,
+  availableTags: any[],
+  alreadyApplied: string[]
+): any | undefined {
+  const topicLower = topic.toLowerCase();
+
+  // Check if topic contains any tag name
+  for (const tag of availableTags) {
+    if (alreadyApplied.includes(tag.id)) continue;
+
+    const tagNameLower = tag.name.toLowerCase();
+
+    // Check if topic contains the tag name or vice versa
+    if (topicLower.includes(tagNameLower) || tagNameLower.includes(topicLower)) {
+      return tag;
+    }
+
+    // Check synonyms
+    const synonyms = TAG_SYNONYMS[tagNameLower] || [];
+    for (const synonym of synonyms) {
+      if (topicLower.includes(synonym) || synonym.includes(topicLower)) {
+        return tag;
+      }
+    }
+  }
+
+  return undefined;
+}
+
+/**
  * Create a forum post for a processed recommendation
  */
 export async function createForumPost(
@@ -64,10 +116,19 @@ export async function createForumPost(
       appliedTags.push(contentTypeTag.id);
     }
 
-    // Try to add topic tags if they exist
-    for (const topic of recommendation.metadata.topics.slice(0, 4)) {
-      const topicTag = availableTags.find((tag) => tag.name.toLowerCase() === topic.toLowerCase());
-      if (topicTag && appliedTags.length < 5) {
+    // Try to add topic tags if they exist - with improved matching
+    for (const topic of recommendation.metadata.topics) {
+      if (appliedTags.length >= 5) break; // Discord limit
+
+      // Try exact match first
+      let topicTag = availableTags.find((tag) => tag.name.toLowerCase() === topic.toLowerCase());
+
+      // If no exact match, try partial/fuzzy matching
+      if (!topicTag) {
+        topicTag = findBestMatchingTag(topic, availableTags, appliedTags);
+      }
+
+      if (topicTag && !appliedTags.includes(topicTag.id)) {
         appliedTags.push(topicTag.id);
       }
     }
@@ -203,6 +264,14 @@ export async function ensureForumTags(client: Client): Promise<void> {
     { name: 'Fitness', emoji: '💪' },
     { name: 'Health', emoji: '🏥' },
     { name: 'Infrastructure', emoji: '🏗️' },
+    { name: 'Business', emoji: '💼' },
+    { name: 'Science', emoji: '🔬' },
+    { name: 'Psychology', emoji: '🧠' },
+    { name: 'Productivity', emoji: '⚡' },
+    { name: 'Nutrition', emoji: '🥗' },
+    { name: 'Mental Health', emoji: '🧘' },
+    { name: 'Self-Improvement', emoji: '🌱' },
+    { name: 'Career', emoji: '📈' },
   ];
 
   const missingTags = requiredTags.filter((tag) => !existingTags.includes(tag.name.toLowerCase()));

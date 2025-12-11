@@ -44,7 +44,7 @@ Please analyze this recommendation and extract the following metadata:
 1. **Title**: A clear, concise title for this recommendation
 2. **Description**: A brief description (1-2 sentences) of what this content is about
 3. **Content Type**: One of: video, podcast, article, book, tool, course, or other
-4. **Topics**: An array of 2-5 relevant topic tags (e.g., ["programming", "web-development", "typescript"])
+4. **Topics**: An array of 2-4 topic tags from these categories: Tech, AI, Relationships, Fitness, Health, Infrastructure, Business, Science, Psychology, Productivity, Nutrition, Mental Health, Self-Improvement, Career. Choose the most relevant ones.
 5. **Duration**: Estimated length/duration if applicable (e.g., "45 minutes", "300 pages", "10 min read") or null
 6. **Quality Score**: Rate from 1-10 based on the recommender's enthusiasm and the content's perceived value
 7. **Sentiment**: The tone of the recommendation - one of: positive, neutral, critical, informative
@@ -126,7 +126,7 @@ Based on the full content above and the recommender's message, provide a compreh
 1. **Title**: Use the extracted title or create a clear, descriptive one
 2. **Description**: A brief description (1-2 sentences) of what this content is about
 3. **Content Type**: One of: video, podcast, article, book, tool, course, or other
-4. **Topics**: An array of 3-5 relevant topic tags based on the actual content
+4. **Topics**: An array of 2-4 topic tags from these categories: Tech, AI, Relationships, Fitness, Health, Infrastructure, Business, Science, Psychology, Productivity, Nutrition, Mental Health, Self-Improvement, Career. Choose the most relevant ones based on the actual content.
 5. **Duration**: Estimated time to consume (e.g., "45 min", "10 min read") or null
 6. **Quality Score**: Rate from 1-10 based on content depth, usefulness, and recommender's enthusiasm
 7. **Sentiment**: One of: positive, neutral, critical, informative
