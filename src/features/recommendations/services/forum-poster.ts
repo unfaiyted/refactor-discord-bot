@@ -17,6 +17,7 @@ const CONTENT_TYPE_EMOJI: Record<string, string> = {
   podcast: '🎙️',
   article: '📰',
   book: '📚',
+  audiobook: '🎧',
   tool: '🛠️',
   course: '🎓',
   other: '🔗',
@@ -192,6 +193,7 @@ export async function ensureForumTags(client: Client): Promise<void> {
     { name: 'Podcast', emoji: '🎙️' },
     { name: 'Article', emoji: '📰' },
     { name: 'Book', emoji: '📚' },
+    { name: 'Audiobook', emoji: '🎧' },
     { name: 'Tool', emoji: '🛠️' },
     { name: 'Course', emoji: '🎓' },
     // Topic categories

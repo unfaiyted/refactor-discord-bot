@@ -1,6 +1,7 @@
 import { YouTubeExtractor, youtubeExtractor } from './youtube-extractor.js';
 import { ArticleExtractor, articleExtractor } from './article-extractor.js';
 import { PodcastExtractor, podcastExtractor } from './podcast-extractor.js';
+import { AudiobookExtractor, audiobookExtractor } from './audiobook-extractor.js';
 import { logger } from '@utils/logger.js';
 import type { ExtractedContent } from './types.js';
 import { ContentExtractionError } from './types.js';
@@ -23,6 +24,11 @@ export class ContentExtractor {
       if (YouTubeExtractor.isYouTubeUrl(normalizedUrl)) {
         logger.debug('Routing to YouTube extractor');
         return await youtubeExtractor.extract(normalizedUrl);
+      }
+
+      if (AudiobookExtractor.isAudiobookUrl(normalizedUrl)) {
+        logger.debug('Routing to audiobook extractor');
+        return await audiobookExtractor.extract(normalizedUrl);
       }
 
       if (PodcastExtractor.isPodcastUrl(normalizedUrl)) {
@@ -85,9 +91,12 @@ export class ContentExtractor {
   /**
    * Detect content type from URL without extracting
    */
-  detectType(url: string): 'youtube' | 'podcast' | 'article' | 'other' {
+  detectType(url: string): 'youtube' | 'audiobook' | 'podcast' | 'article' | 'other' {
     if (YouTubeExtractor.isYouTubeUrl(url)) {
       return 'youtube';
+    }
+    if (AudiobookExtractor.isAudiobookUrl(url)) {
+      return 'audiobook';
     }
     if (PodcastExtractor.isPodcastUrl(url)) {
       return 'podcast';

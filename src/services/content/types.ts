@@ -2,7 +2,7 @@
  * Content extraction types and interfaces
  */
 
-export type ContentType = 'youtube' | 'article' | 'podcast' | 'other';
+export type ContentType = 'youtube' | 'article' | 'podcast' | 'audiobook' | 'other';
 
 export interface ExtractedContent {
   type: ContentType;
