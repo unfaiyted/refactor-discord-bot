@@ -43,10 +43,20 @@ model Recommendation {
   processingAttempts Int     @default(0)
   processedAt       DateTime?
 
+  // Conversation tracking
+  conversationCount Int      @default(0)
+  lastConversationAt DateTime?
+  engagementScore   Float?   // 0-100 score based on interactions
+
+  // Relations
+  conversations     ConversationMessage[]
+  engagement        ThreadEngagement?
+
   @@index([recommenderId])
   @@index([contentType])
   @@index([processed])
   @@index([createdAt])
+  @@index([forumThreadId])
   @@map("recommendations")
 }
 
@@ -80,4 +90,78 @@ model ProcessingLog {
   @@index([recommendationId])
   @@index([createdAt])
   @@map("processing_logs")
+}
+
+model ConversationMessage {
+  id                String   @id @default(cuid())
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Discord message info
+  messageId         String   @unique
+  threadId          String
+  channelId         String
+
+  // User info
+  userId            String
+  userName          String
+
+  // Message content
+  content           String   @db.Text
+
+  // Bot response tracking
+  isBot             Boolean  @default(false)
+  aiResponse        String?  @db.Text
+  responseTime      Int?     // Response time in milliseconds
+
+  // Context metadata
+  messageNumber     Int      // Position in conversation thread
+  topicsDiscussed   String[] // AI-extracted topics from this message
+
+  // Link to recommendation
+  recommendationId  String?
+  recommendation    Recommendation? @relation(fields: [recommendationId], references: [id], onDelete: Cascade)
+
+  @@index([threadId])
+  @@index([recommendationId])
+  @@index([userId])
+  @@index([createdAt])
+  @@map("conversation_messages")
+}
+
+model ThreadEngagement {
+  id                String   @id @default(cuid())
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Thread identification
+  threadId          String   @unique
+  recommendationId  String   @unique
+  recommendation    Recommendation @relation(fields: [recommendationId], references: [id], onDelete: Cascade)
+
+  // Engagement metrics
+  totalMessages     Int      @default(0)
+  userMessages      Int      @default(0)
+  botMessages       Int      @default(0)
+  uniqueUsers       Int      @default(0)
+
+  // Topics and interaction patterns
+  topicsDiscussed   String[] // Array of all topics discussed
+  avgResponseTime   Float?   // Average bot response time in ms
+
+  // Participation tracking
+  participantIds    String[] // Array of unique user IDs
+  participantNames  String[] // Array of unique user names
+
+  // Activity timestamps
+  firstMessageAt    DateTime?
+  lastMessageAt     DateTime?
+
+  // Engagement score calculation
+  engagementScore   Float?   // 0-100 calculated score
+
+  @@index([threadId])
+  @@index([recommendationId])
+  @@index([engagementScore])
+  @@map("thread_engagement")
 }

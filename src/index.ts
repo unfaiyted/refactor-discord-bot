@@ -2,6 +2,10 @@ import { Client, GatewayIntentBits, Events, PermissionFlagsBits } from 'discord.
 import { env } from '@config/env.js';
 import { logger } from '@utils/logger.js';
 import { handleRecommendationMessage } from '@features/recommendations/events/message-handler.js';
+import {
+  handleThreadMention,
+  isThreadMention,
+} from '@features/recommendations/events/thread-handler.js';
 import { ensureForumTags } from '@features/recommendations/services/forum-poster.js';
 
 /**
@@ -82,24 +86,40 @@ client.once(Events.ClientReady, async (readyClient) => {
 });
 
 /**
- * Message create event - handles new recommendations
+ * Message create event - handles new recommendations and thread mentions
  */
 client.on(Events.MessageCreate, async (message) => {
   // Ignore bot messages
   if (message.author.bot) return;
 
-  // Only process messages from the recommendations channel
-  if (message.channelId !== env.discord.recommendationsChannelId) return;
+  // Handle thread mentions (bot tagged in forum threads)
+  if (isThreadMention(message, client)) {
+    logger.debug('Bot mentioned in thread', {
+      threadId: message.channel.id,
+      author: message.author.tag,
+      content: message.content.substring(0, 100),
+    });
 
-  logger.debug('New message in recommendations channel', {
-    author: message.author.tag,
-    content: message.content.substring(0, 100),
-  });
+    try {
+      await handleThreadMention(message, client);
+    } catch (error) {
+      logger.error('Error handling thread mention', error);
+    }
+    return;
+  }
 
-  try {
-    await handleRecommendationMessage(message);
-  } catch (error) {
-    logger.error('Error handling recommendation message', error);
+  // Handle new recommendations in recommendations channel
+  if (message.channelId === env.discord.recommendationsChannelId) {
+    logger.debug('New message in recommendations channel', {
+      author: message.author.tag,
+      content: message.content.substring(0, 100),
+    });
+
+    try {
+      await handleRecommendationMessage(message);
+    } catch (error) {
+      logger.error('Error handling recommendation message', error);
+    }
   }
 });
 

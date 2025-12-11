@@ -1,4 +1,4 @@
-import { Readability } from '@mozilla/readability';
+import { Readability, isProbablyReaderable } from '@mozilla/readability';
 import { JSDOM } from 'jsdom';
 import { logger } from '@utils/logger.js';
 import type { ExtractedContent, ContentMetadata } from './types.js';
@@ -34,13 +34,13 @@ export class ArticleExtractor {
       const document = dom.window.document;
 
       // Check if it's an article
-      const reader = new Readability(document);
-      if (!reader.isProbablyReaderable()) {
+      if (!isProbablyReaderable(document)) {
         logger.warn('Content may not be an article', { url });
         // Continue anyway - we'll extract what we can
       }
 
       // Extract article
+      const reader = new Readability(document);
       const article = reader.parse();
 
       if (!article) {
