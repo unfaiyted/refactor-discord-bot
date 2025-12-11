@@ -7,6 +7,7 @@ import {
   isThreadMention,
 } from '@features/recommendations/events/thread-handler.js';
 import { ensureForumTags } from '@features/recommendations/services/forum-poster.js';
+import { backfillMissedRecommendations } from '@services/backfill/backfill-service.js';
 
 /**
  * Generate bot invite URL with required permissions
@@ -83,6 +84,21 @@ client.once(Events.ClientReady, async (readyClient) => {
       logger.error('Failed to check forum tags', error);
     }
   }
+
+  // Backfill missed recommendations (runs asynchronously in background)
+  backfillMissedRecommendations(readyClient)
+    .then((result) => {
+      logger.info('Backfill completed', {
+        checked: result.checked,
+        processed: result.processed,
+        skipped: result.skipped,
+        errors: result.errors,
+        limitReached: result.limitReached,
+      });
+    })
+    .catch((error) => {
+      logger.error('Backfill failed', error);
+    });
 });
 
 /**

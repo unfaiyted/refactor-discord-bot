@@ -126,6 +126,37 @@ export class RecommendationService {
       orderBy: { createdAt: 'desc' },
     });
   }
+
+  /**
+   * Get the timestamp of the most recently processed recommendation
+   * Used for backfilling missed messages on startup
+   */
+  async getLastProcessedTimestamp(): Promise<Date | null> {
+    const latest = await prisma.recommendation.findFirst({
+      where: { processed: true },
+      orderBy: { processedAt: 'desc' },
+      select: { processedAt: true },
+    });
+
+    return latest?.processedAt || null;
+  }
+
+  /**
+   * Bulk check which message IDs already exist in the database
+   * Returns a Set of existing message IDs for efficient lookup
+   */
+  async findExistingMessageIds(messageIds: string[]): Promise<Set<string>> {
+    if (messageIds.length === 0) {
+      return new Set();
+    }
+
+    const existing = await prisma.recommendation.findMany({
+      where: { originalMessageId: { in: messageIds } },
+      select: { originalMessageId: true },
+    });
+
+    return new Set(existing.map((r) => r.originalMessageId));
+  }
 }
 
 export const recommendationService = new RecommendationService();
