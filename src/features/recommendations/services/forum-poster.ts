@@ -177,7 +177,15 @@ export async function createForumPost(
 
     // Add thumbnail if available (shows in gallery view)
     if (recommendation.metadata.thumbnail) {
+      logger.debug('Setting embed image', {
+        thumbnail: recommendation.metadata.thumbnail,
+        title: recommendation.metadata.title,
+      });
       embedBuilder.setImage(recommendation.metadata.thumbnail);
+    } else {
+      logger.debug('No thumbnail available for embed', {
+        title: recommendation.metadata.title,
+      });
     }
 
     // Add recommender info at the end
