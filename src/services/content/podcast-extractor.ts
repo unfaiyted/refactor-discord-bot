@@ -184,6 +184,8 @@ export class PodcastExtractor {
         'buzzsprout.com',
         'simplecast.com',
         'transistor.fm',
+        'spotify.com', // Spotify podcasts
+        'open.spotify.com', // Spotify podcasts (direct links)
       ];
 
       return podcastDomains.some((domain) => hostname.includes(domain));
