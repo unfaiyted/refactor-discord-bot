@@ -8,6 +8,28 @@ import {
 import { env } from '@config/env.js';
 import { logger } from '@utils/logger.js';
 import type { ProcessedRecommendation } from './processor.js';
+import {
+  LIBRARY_TAGS,
+  type LibraryType,
+  findMatchingTag,
+  getTagEmoji,
+} from '../config/library-tags.js';
+
+/**
+ * Get the correct forum ID based on library type
+ */
+function getLibraryForumId(libraryType: LibraryType): string {
+  switch (libraryType) {
+    case 'fiction':
+      return env.discord.fictionVaultForumId;
+    case 'athenaeum':
+      return env.discord.athenaeumForumId;
+    case 'growth':
+      return env.discord.growthLabForumId;
+    default:
+      throw new Error(`Unknown library type: ${libraryType}`);
+  }
+}
 
 /**
  * Content type emoji mapping
@@ -34,57 +56,6 @@ function getQualityEmoji(score: number): string {
 }
 
 /**
- * Tag synonyms and related terms for better matching
- */
-const TAG_SYNONYMS: Record<string, string[]> = {
-  health: ['wellness', 'medical', 'healthcare', 'wellbeing'],
-  fitness: ['exercise', 'workout', 'training', 'physical'],
-  tech: ['technology', 'software', 'programming', 'coding', 'development'],
-  ai: ['artificial intelligence', 'machine learning', 'ml', 'llm', 'gpt'],
-  relationships: ['dating', 'marriage', 'family', 'social'],
-  psychology: ['mental', 'mindset', 'cognitive', 'behavioral'],
-  nutrition: ['diet', 'eating', 'food', 'meal'],
-  productivity: ['efficiency', 'time management', 'organization', 'gtd'],
-  career: ['job', 'work', 'professional', 'employment'],
-  science: ['research', 'scientific', 'biology', 'chemistry', 'physics'],
-  'mental health': ['therapy', 'anxiety', 'depression', 'stress', 'mindfulness'],
-  'self-improvement': ['personal development', 'growth', 'self-help', 'improvement'],
-};
-
-/**
- * Find best matching tag using fuzzy matching and synonyms
- */
-function findBestMatchingTag(
-  topic: string,
-  availableTags: any[],
-  alreadyApplied: string[]
-): any | undefined {
-  const topicLower = topic.toLowerCase();
-
-  // Check if topic contains any tag name
-  for (const tag of availableTags) {
-    if (alreadyApplied.includes(tag.id)) continue;
-
-    const tagNameLower = tag.name.toLowerCase();
-
-    // Check if topic contains the tag name or vice versa
-    if (topicLower.includes(tagNameLower) || tagNameLower.includes(topicLower)) {
-      return tag;
-    }
-
-    // Check synonyms
-    const synonyms = TAG_SYNONYMS[tagNameLower] || [];
-    for (const synonym of synonyms) {
-      if (topicLower.includes(synonym) || synonym.includes(topicLower)) {
-        return tag;
-      }
-    }
-  }
-
-  return undefined;
-}
-
-/**
  * Create a forum post for a processed recommendation
  */
 export async function createForumPost(
@@ -94,41 +65,39 @@ export async function createForumPost(
   recommenderTag: string
 ): Promise<{ postId: string; threadId: string }> {
   try {
-    // Get the forum channel
-    const channel = await client.channels.fetch(env.discord.processedRecommendationsForumId);
+    // Get the correct forum channel based on library type
+    const libraryType = recommendation.metadata.libraryType;
+    const forumId = getLibraryForumId(libraryType);
+    const channel = await client.channels.fetch(forumId);
 
     if (!channel || channel.type !== ChannelType.GuildForum) {
-      throw new Error('Processed recommendations channel is not a forum channel');
+      throw new Error(`Library forum channel (${libraryType}) is not a forum channel`);
     }
 
     const forumChannel = channel as ForumChannel;
-
-    // Get or create tags for content type
     const availableTags = forumChannel.availableTags;
-    const contentTypeTag = availableTags.find(
-      (tag) => tag.name.toLowerCase() === recommendation.metadata.contentType.toLowerCase()
-    );
 
-    // Build tags array (limit 5 tags per Discord)
+    // Build tags array using library-specific tags (limit 5 tags per Discord)
     const appliedTags: string[] = [];
-    if (contentTypeTag) {
-      appliedTags.push(contentTypeTag.id);
+
+    // Add primary tag first
+    const primaryTagMatch = findMatchingTag(
+      recommendation.metadata.primaryTag,
+      libraryType,
+      availableTags,
+      appliedTags
+    );
+    if (primaryTagMatch) {
+      appliedTags.push(primaryTagMatch.id);
     }
 
-    // Try to add topic tags if they exist - with improved matching
-    for (const topic of recommendation.metadata.topics) {
+    // Add secondary tags
+    for (const secondaryTag of recommendation.metadata.secondaryTags) {
       if (appliedTags.length >= 5) break; // Discord limit
 
-      // Try exact match first
-      let topicTag = availableTags.find((tag) => tag.name.toLowerCase() === topic.toLowerCase());
-
-      // If no exact match, try partial/fuzzy matching
-      if (!topicTag) {
-        topicTag = findBestMatchingTag(topic, availableTags, appliedTags);
-      }
-
-      if (topicTag && !appliedTags.includes(topicTag.id)) {
-        appliedTags.push(topicTag.id);
+      const tagMatch = findMatchingTag(secondaryTag, libraryType, availableTags, appliedTags);
+      if (tagMatch && !appliedTags.includes(tagMatch.id)) {
+        appliedTags.push(tagMatch.id);
       }
     }
 
@@ -242,55 +211,52 @@ function getEmbedColor(sentiment: string): number {
 }
 
 /**
- * Ensure required forum tags exist
+ * Ensure required forum tags exist for a specific library
  */
-export async function ensureForumTags(client: Client): Promise<void> {
-  const channel = await client.channels.fetch(env.discord.processedRecommendationsForumId);
+async function ensureLibraryForumTags(client: Client, libraryType: LibraryType): Promise<void> {
+  const forumId = getLibraryForumId(libraryType);
+  const channel = await client.channels.fetch(forumId);
 
   if (!channel || channel.type !== ChannelType.GuildForum) {
-    logger.warn('Cannot ensure tags: channel is not a forum');
+    logger.warn(`Cannot ensure tags for ${libraryType}: channel is not a forum`);
     return;
   }
 
   const forumChannel = channel as ForumChannel;
   const existingTags = forumChannel.availableTags.map((tag) => tag.name.toLowerCase());
 
-  const requiredTags = [
-    // Content types
-    { name: 'Video', emoji: '🎥' },
-    { name: 'Podcast', emoji: '🎙️' },
-    { name: 'Article', emoji: '📰' },
-    { name: 'Book', emoji: '📚' },
-    { name: 'Audiobook', emoji: '🎧' },
-    { name: 'Tool', emoji: '🛠️' },
-    { name: 'Course', emoji: '🎓' },
-    // Topic categories
-    { name: 'Tech', emoji: '💻' },
-    { name: 'AI', emoji: '🤖' },
-    { name: 'Relationships', emoji: '💑' },
-    { name: 'Fitness', emoji: '💪' },
-    { name: 'Health', emoji: '🏥' },
-    { name: 'Infrastructure', emoji: '🏗️' },
-    { name: 'Science', emoji: '🔬' },
-    { name: 'Psychology', emoji: '🧠' },
-    { name: 'Productivity', emoji: '⚡' },
-    { name: 'Nutrition', emoji: '🥗' },
-    { name: 'Mental Health', emoji: '🧘' },
-    { name: 'Self-Improvement', emoji: '🌱' },
-    { name: 'Career', emoji: '📈' },
-  ];
+  // Get required tags from library configuration
+  const libraryConfig = LIBRARY_TAGS[libraryType];
+  const requiredTags = libraryConfig.tags.map((tag) => ({
+    name: tag.name,
+    emoji: tag.emoji,
+  }));
 
   const missingTags = requiredTags.filter((tag) => !existingTags.includes(tag.name.toLowerCase()));
 
   if (missingTags.length > 0) {
-    logger.info('Missing forum tags detected', {
+    logger.warn(`Missing forum tags detected for ${libraryType.toUpperCase()} library:`, {
+      library: libraryType,
       missing: missingTags.map((t) => t.name),
     });
-    logger.warn('Please manually create these forum tags in Discord:');
+    logger.warn(`Please manually create these ${missingTags.length} forum tags in Discord:`);
     missingTags.forEach((tag) => {
       logger.warn(`  - ${tag.emoji} ${tag.name}`);
     });
   } else {
-    logger.info('All required forum tags are present');
+    logger.info(`All required forum tags are present for ${libraryType.toUpperCase()} library`);
   }
+}
+
+/**
+ * Ensure required forum tags exist for all libraries
+ */
+export async function ensureForumTags(client: Client): Promise<void> {
+  logger.info('Checking forum tags for all libraries...');
+
+  await ensureLibraryForumTags(client, 'fiction');
+  await ensureLibraryForumTags(client, 'athenaeum');
+  await ensureLibraryForumTags(client, 'growth');
+
+  logger.info('Forum tag check complete');
 }

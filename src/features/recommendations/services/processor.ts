@@ -22,6 +22,10 @@ export interface ProcessedRecommendation {
     mainIdeas?: string[];
     tldr?: string;
     thumbnail?: string;
+    // Multi-library classification
+    libraryType: 'fiction' | 'athenaeum' | 'growth';
+    primaryTag: string;
+    secondaryTags: string[];
   };
 }
 
@@ -129,6 +133,10 @@ export async function processRecommendation(
         sentiment: metadata.sentiment,
         aiSummary: metadata.summary,
         thumbnail, // Add thumbnail from extracted content
+        // Multi-library classification
+        libraryType: metadata.libraryType,
+        primaryTag: metadata.primaryTag,
+        secondaryTags: metadata.secondaryTags,
       });
 
       const processingTime = Date.now() - startTime;
@@ -154,6 +162,10 @@ export async function processRecommendation(
           mainIdeas: metadata.mainIdeas,
           tldr: metadata.tldr,
           thumbnail, // Include thumbnail in returned metadata
+          // Multi-library classification
+          libraryType: metadata.libraryType,
+          primaryTag: metadata.primaryTag,
+          secondaryTags: metadata.secondaryTags,
         },
       };
     } catch (error) {

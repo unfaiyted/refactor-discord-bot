@@ -11,6 +11,8 @@
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",
     "db:studio": "prisma studio",
+    "bulk-import": "bun src/scripts/bulk-import.ts",
+    "bulk-import:dry-run": "bun src/scripts/bulk-import.ts --dry-run",
     "docker:dev": "docker-compose up --build",
     "docker:dev:bg": "docker-compose up -d --build",
     "docker:dev:logs": "docker-compose logs -f bot",

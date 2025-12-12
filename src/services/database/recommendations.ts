@@ -20,6 +20,10 @@ export interface UpdateRecommendationMetadata {
   sentiment?: string;
   aiSummary?: string;
   thumbnail?: string;
+  // Multi-library classification
+  libraryType?: string;
+  primaryTag?: string;
+  secondaryTags?: string[];
 }
 
 export class RecommendationService {
@@ -105,21 +109,34 @@ export class RecommendationService {
   }
 
   /**
-   * Search recommendations by content type and topics
+   * Search recommendations by content type, topics, and library
    */
   async search(filters: {
     contentType?: string;
     topics?: string[];
+    libraryType?: string;
+    tags?: string[];
     limit?: number;
   }): Promise<Recommendation[]> {
     return prisma.recommendation.findMany({
       where: {
         processed: true,
         ...(filters.contentType && { contentType: filters.contentType }),
+        ...(filters.libraryType && { libraryType: filters.libraryType }),
         ...(filters.topics && {
           topics: {
             hasSome: filters.topics,
           },
+        }),
+        ...(filters.tags && {
+          OR: [
+            { primaryTag: { in: filters.tags } },
+            {
+              secondaryTags: {
+                hasSome: filters.tags,
+              },
+            },
+          ],
         }),
       },
       take: filters.limit || 20,
@@ -156,6 +173,35 @@ export class RecommendationService {
     });
 
     return new Set(existing.map((r) => r.originalMessageId));
+  }
+
+  /**
+   * Check if a URL already exists in the database
+   * Used for duplicate detection during bulk imports
+   */
+  async urlExists(url: string): Promise<boolean> {
+    const count = await prisma.recommendation.count({
+      where: { url },
+    });
+
+    return count > 0;
+  }
+
+  /**
+   * Bulk check which URLs already exist in the database
+   * Returns a Set of existing URLs for efficient lookup
+   */
+  async findExistingUrls(urls: string[]): Promise<Set<string>> {
+    if (urls.length === 0) {
+      return new Set();
+    }
+
+    const existing = await prisma.recommendation.findMany({
+      where: { url: { in: urls } },
+      select: { url: true },
+    });
+
+    return new Set(existing.map((r) => r.url));
   }
 }
 

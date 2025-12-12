@@ -8,6 +8,7 @@ import {
 } from '@features/recommendations/events/thread-handler.js';
 import { ensureForumTags } from '@features/recommendations/services/forum-poster.js';
 import { backfillMissedRecommendations } from '@services/backfill/backfill-service.js';
+import { handleSearchQuery } from '@features/search/search-handler.js';
 
 /**
  * Generate bot invite URL with required permissions
@@ -71,7 +72,10 @@ const client = new Client({
 client.once(Events.ClientReady, async (readyClient) => {
   logger.info(`Bot is ready! Logged in as ${readyClient.user.tag}`);
   logger.info(`Monitoring channel: ${env.discord.recommendationsChannelId}`);
-  logger.info(`Forum channel: ${env.discord.processedRecommendationsForumId}`);
+  logger.info(`Fiction Vault Forum: ${env.discord.fictionVaultForumId}`);
+  logger.info(`Athenaeum Forum: ${env.discord.athenaeumForumId}`);
+  logger.info(`Growth Lab Forum: ${env.discord.growthLabForumId}`);
+  logger.info(`Search Channel: ${env.discord.searchChannelId}`);
 
   // Check and warn about missing forum tags
   try {
@@ -120,6 +124,21 @@ client.on(Events.MessageCreate, async (message) => {
       await handleThreadMention(message, client);
     } catch (error) {
       logger.error('Error handling thread mention', error);
+    }
+    return;
+  }
+
+  // Handle search queries in search channel
+  if (message.channelId === env.discord.searchChannelId) {
+    logger.debug('Search query in search channel', {
+      author: message.author.tag,
+      content: message.content.substring(0, 100),
+    });
+
+    try {
+      await handleSearchQuery(message);
+    } catch (error) {
+      logger.error('Error handling search query', error);
     }
     return;
   }

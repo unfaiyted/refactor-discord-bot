@@ -17,7 +17,7 @@ services:
       - ./prisma:/app/prisma # Database schema
       - ./tsconfig.json:/app/tsconfig.json # TypeScript config
       - ./bunfig.toml:/app/bunfig.toml # Bun config
-      - bot_cache:/app/data # Persist cache across restarts
+      - ./data:/app/data # Mount data directory from host (for bulk imports and cache)
 
       # Exclude node_modules from mount - use container's version
       - /app/node_modules

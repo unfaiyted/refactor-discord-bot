@@ -44,8 +44,8 @@ services:
       NODE_ENV: ${NODE_ENV:-production}
       LOG_LEVEL: ${LOG_LEVEL:-info}
     volumes:
-      # Mount for SQLite cache (optional, for persistence across restarts)
-      - bot_cache:/app/data
+      # Mount data directory from host (for bulk imports and cache)
+      - ./data:/app/data
     networks:
       - bot-network
 

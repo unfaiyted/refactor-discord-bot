@@ -33,6 +33,11 @@ model Recommendation {
   aiSummary         String?  @db.Text
   thumbnail         String?  @db.Text // URL to thumbnail/preview image
 
+  // Multi-library classification
+  libraryType       String?  // 'fiction' | 'athenaeum' | 'growth'
+  primaryTag        String?  // Main specialized tag from library's 20 tags
+  secondaryTags     String[] @default([]) // Additional tags (up to 4 more)
+
   // Forum post info
   forumPostId       String?  @unique
   forumThreadId     String?  @unique
@@ -54,6 +59,7 @@ model Recommendation {
 
   @@index([recommenderId])
   @@index([contentType])
+  @@index([libraryType])
   @@index([processed])
   @@index([createdAt])
   @@index([forumThreadId])
@@ -68,7 +74,12 @@ model GuildConfig {
 
   // Channel configuration
   recommendationsChannelId      String?
-  processedRecommendationsForumId String?
+
+  // Multi-library forums
+  fictionVaultForumId           String?
+  athenaeumForumId              String?
+  growthLabForumId              String?
+  searchChannelId               String?
 
   // Feature flags
   autoProcessingEnabled         Boolean  @default(true)
