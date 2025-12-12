@@ -4,19 +4,29 @@ A high-performance Discord bot built with Bun, TypeScript, and Claude AI for int
 
 ## Features
 
+- **Multi-Library System**: Three specialized recommendation libraries:
+  - **Fiction Vault**: Novels, movies, TV shows, comics, and entertainment
+  - **Athenaeum**: Education, history, philosophy, and deep non-fiction
+  - **Growth Lab**: Skills, productivity, health, and self-improvement
 - **Automatic Recommendation Processing**: Monitors a designated channel for recommendations
-- **AI-Powered Analysis**: Uses Claude AI to extract metadata from recommendations including:
-  - Content type (video, podcast, article, book, tool, course)
-  - Topic categorization
+- **AI-Powered Analysis**: Uses Claude AI to extract metadata and classify content:
+  - Content type (video, podcast, article, book, audiobook, tool, course)
+  - Library classification (Fiction/Athenaeum/Growth)
+  - Specialized tags from library-specific tag sets (20 tags per library)
   - Duration/length estimation
   - Quality scoring (1-10)
   - Sentiment analysis
-  - Intelligent summaries
+  - Intelligent summaries with key takeaways
+- **Smart Search**: Query across all libraries with rich results:
+  - Natural language search queries
+  - Tag-based filtering
+  - Library-specific searches
+  - Rich embeds with thumbnails and color-coding
 - **Forum Organization**: Automatically creates organized forum posts with:
-  - Rich embeds with metadata
-  - Auto-applied tags for content types and topics
-  - Searchable and filterable content
-  - Links back to original messages
+  - Rich embeds with metadata and thumbnails
+  - Library-specific tags auto-applied
+  - Color-coded by library type
+  - Links back to original messages and sources
 - **Scalable Architecture**: Feature-based modular design for easy extensibility
 - **Fast Performance**: Built on Bun runtime (3x faster than Node.js)
 - **Dual Database Layer**: PostgreSQL for persistence + SQLite for caching
@@ -63,7 +73,10 @@ The easiest way to run the bot with all dependencies included!
    DISCORD_BOT_TOKEN=your_discord_bot_token_here
    DISCORD_CLIENT_ID=your_discord_client_id_here
    RECOMMENDATIONS_CHANNEL_ID=your_recommendations_channel_id
-   PROCESSED_RECOMMENDATIONS_FORUM_ID=your_library_forum_channel_id
+   FICTION_VAULT_FORUM_ID=your_fiction_vault_forum_id
+   ATHENAEUM_FORUM_ID=your_athenaeum_forum_id
+   GROWTH_LAB_FORUM_ID=your_growth_lab_forum_id
+   SEARCH_CHANNEL_ID=your_search_channel_id
    ANTHROPIC_API_KEY=your_anthropic_api_key_here
    POSTGRES_PASSWORD=your_secure_password_here
    ```
@@ -132,7 +145,10 @@ The easiest way to run the bot with all dependencies included!
    DISCORD_BOT_TOKEN=your_discord_bot_token_here
    DISCORD_CLIENT_ID=your_discord_client_id_here
    RECOMMENDATIONS_CHANNEL_ID=your_recommendations_channel_id
-   PROCESSED_RECOMMENDATIONS_FORUM_ID=your_forum_channel_id
+   FICTION_VAULT_FORUM_ID=your_fiction_vault_forum_id
+   ATHENAEUM_FORUM_ID=your_athenaeum_forum_id
+   GROWTH_LAB_FORUM_ID=your_growth_lab_forum_id
+   SEARCH_CHANNEL_ID=your_search_channel_id
    ANTHROPIC_API_KEY=your_anthropic_api_key_here
    DATABASE_URL=postgresql://username:password@localhost:5432/refactor_bot?schema=public
    ```
@@ -185,21 +201,34 @@ Permissions included:
    - Right-click the channel → Copy Channel ID
    - Add to `.env` as `RECOMMENDATIONS_CHANNEL_ID`
 
-2. **Create a forum channel** for the organized library
-   - **Recommended names**: `#library`, `#recs`, `#archive`, `#catalog`
-   - Keep it short and memorable!
-   - Right-click → Copy Channel ID
-   - Add to `.env` as `PROCESSED_RECOMMENDATIONS_FORUM_ID`
+2. **Create THREE forum channels** - one for each library:
 
-3. **Create Forum Tags** (optional but recommended):
-   - Go to your forum channel settings
-   - Add tags for content types:
-     - 🎥 Video
-     - 🎙️ Podcast
-     - 📰 Article
-     - 📚 Book
-     - 🛠️ Tool
-     - 🎓 Course
+   **Fiction Vault Forum** (Novels, Movies, TV, Comics)
+   - Create a forum channel named `fiction-vault` or `fiction`
+   - Right-click → Copy Channel ID
+   - Add to `.env` as `FICTION_VAULT_FORUM_ID`
+
+   **Athenaeum Forum** (Education, History, Philosophy, Non-fiction)
+   - Create a forum channel named `athenaeum` or `knowledge`
+   - Right-click → Copy Channel ID
+   - Add to `.env` as `ATHENAEUM_FORUM_ID`
+
+   **Growth Lab Forum** (Skills, Productivity, Health, Self-improvement)
+   - Create a forum channel named `growth-lab` or `growth`
+   - Right-click → Copy Channel ID
+   - Add to `.env` as `GROWTH_LAB_FORUM_ID`
+
+3. **Create a search channel** (regular text channel)
+   - Name it `#search` or similar
+   - Right-click → Copy Channel ID
+   - Add to `.env` as `SEARCH_CHANNEL_ID`
+
+4. **Create Forum Tags** for EACH library (the bot will warn about missing tags):
+
+   Each forum should have 20 specialized tags. The bot will list missing tags on startup.
+   You can manually create tags through Discord's forum settings or let the bot identify
+   what's missing. See `src/features/recommendations/config/library-tags.ts` for the
+   complete tag lists for each library.
 
 ## Running the Bot
 
@@ -276,13 +305,28 @@ bun run start
 
 ## How It Works
 
+### Recommendation Processing
+
 1. **User posts a recommendation** in `#recommendations` channel with a URL
 2. **Bot detects the message** and adds a 👀 reaction to show it's processing
 3. **URL extraction**: Extracts the first URL from the message
 4. **Database storage**: Creates a record in PostgreSQL
-5. **AI Analysis**: Sends to Claude AI for metadata extraction
-6. **Forum post creation**: Creates a rich forum post in your library forum channel
+5. **AI Analysis**: Sends to Claude AI for:
+   - Content metadata extraction (type, duration, quality, sentiment)
+   - Library classification (Fiction Vault / Athenaeum / Growth Lab)
+   - Specialized tag selection from library-specific tag sets
+6. **Forum post creation**: Creates a rich forum post in the appropriate library forum
 7. **Success notification**: Adds ✅ reaction to original message
+
+### Search Functionality
+
+1. **User posts a query** in `#search` channel
+2. **Query parsing**: Extracts tags, library filters, and natural language
+3. **Database search**: Queries across all or specific libraries
+4. **Rich results**: Returns up to 10 results with:
+   - Thumbnails and color-coded embeds
+   - Tags and metadata
+   - Links to forum threads and original sources
 
 ## Project Structure
 
@@ -448,16 +492,19 @@ docker-compose up -d
 
 ## Environment Variables
 
-| Variable                             | Description                             | Required |
-| ------------------------------------ | --------------------------------------- | -------- |
-| `DISCORD_BOT_TOKEN`                  | Discord bot token from Developer Portal | Yes      |
-| `DISCORD_CLIENT_ID`                  | Discord application client ID           | Yes      |
-| `RECOMMENDATIONS_CHANNEL_ID`         | Channel to monitor for recommendations  | Yes      |
-| `PROCESSED_RECOMMENDATIONS_FORUM_ID` | Forum channel for processed posts       | Yes      |
-| `ANTHROPIC_API_KEY`                  | Claude API key from Anthropic           | Yes      |
-| `DATABASE_URL`                       | PostgreSQL connection string            | Yes      |
-| `NODE_ENV`                           | Environment (development/production)    | No       |
-| `LOG_LEVEL`                          | Logging level (debug/info/warn/error)   | No       |
+| Variable                     | Description                                 | Required |
+| ---------------------------- | ------------------------------------------- | -------- |
+| `DISCORD_BOT_TOKEN`          | Discord bot token from Developer Portal     | Yes      |
+| `DISCORD_CLIENT_ID`          | Discord application client ID               | Yes      |
+| `RECOMMENDATIONS_CHANNEL_ID` | Channel to monitor for recommendations      | Yes      |
+| `FICTION_VAULT_FORUM_ID`     | Fiction Vault forum channel ID              | Yes      |
+| `ATHENAEUM_FORUM_ID`         | Athenaeum forum channel ID                  | Yes      |
+| `GROWTH_LAB_FORUM_ID`        | Growth Lab forum channel ID                 | Yes      |
+| `SEARCH_CHANNEL_ID`          | Search channel for querying recommendations | Yes      |
+| `ANTHROPIC_API_KEY`          | Claude API key from Anthropic               | Yes      |
+| `DATABASE_URL`               | PostgreSQL connection string                | Yes      |
+| `NODE_ENV`                   | Environment (development/production)        | No       |
+| `LOG_LEVEL`                  | Logging level (debug/info/warn/error)       | No       |
 
 ## Performance
 

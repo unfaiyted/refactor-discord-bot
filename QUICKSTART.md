@@ -47,7 +47,10 @@ Edit `.env` and paste your keys:
 DISCORD_BOT_TOKEN=paste_your_discord_token_here
 DISCORD_CLIENT_ID=paste_your_client_id_here
 RECOMMENDATIONS_CHANNEL_ID=will_get_this_next
-PROCESSED_RECOMMENDATIONS_FORUM_ID=will_get_this_next
+FICTION_VAULT_FORUM_ID=will_get_this_next
+ATHENAEUM_FORUM_ID=will_get_this_next
+GROWTH_LAB_FORUM_ID=will_get_this_next
+SEARCH_CHANNEL_ID=will_get_this_next
 ANTHROPIC_API_KEY=paste_your_anthropic_key_here
 POSTGRES_PASSWORD=choose_a_secure_password
 ```
@@ -62,7 +65,10 @@ POSTGRES_PASSWORD=choose_a_secure_password
 
 2. **Create channels**:
    - Create a text channel called `#recommendations`
-   - Create a forum channel called `#library`
+   - Create a forum channel called `#fiction-vault`
+   - Create a forum channel called `#athenaeum`
+   - Create a forum channel called `#growth-lab`
+   - Create a text channel called `#search`
 
 3. **Get channel IDs**:
    - Enable Developer Mode: Settings → Advanced → Developer Mode
@@ -70,16 +76,17 @@ POSTGRES_PASSWORD=choose_a_secure_password
    - Paste into `.env`:
      ```env
      RECOMMENDATIONS_CHANNEL_ID=123456789012345678
-     PROCESSED_RECOMMENDATIONS_FORUM_ID=123456789012345678
+     FICTION_VAULT_FORUM_ID=123456789012345678
+     ATHENAEUM_FORUM_ID=123456789012345678
+     GROWTH_LAB_FORUM_ID=123456789012345678
+     SEARCH_CHANNEL_ID=123456789012345678
      ```
 
-4. **Create forum tags** in `#library`:
-   - 🎥 Video
-   - 🎙️ Podcast
-   - 📰 Article
-   - 📚 Book
-   - 🛠️ Tool
-   - 🎓 Course
+4. **Create forum tags**:
+   The bot will warn you about missing tags on startup.
+   Each library forum needs 20 specialized tags.
+   Check the bot logs for the complete list or see
+   `src/features/recommendations/config/library-tags.ts`
 
 ### Step 5: Start the Bot!
 
@@ -155,7 +162,10 @@ Edit `.env` and paste your keys:
 DISCORD_BOT_TOKEN=paste_your_discord_token_here
 DISCORD_CLIENT_ID=paste_your_client_id_here
 RECOMMENDATIONS_CHANNEL_ID=will_get_this_next
-PROCESSED_RECOMMENDATIONS_FORUM_ID=will_get_this_next
+FICTION_VAULT_FORUM_ID=will_get_this_next
+ATHENAEUM_FORUM_ID=will_get_this_next
+GROWTH_LAB_FORUM_ID=will_get_this_next
+SEARCH_CHANNEL_ID=will_get_this_next
 ANTHROPIC_API_KEY=paste_your_anthropic_key_here
 DATABASE_URL=postgresql://user:password@localhost:5432/refactor_bot
 ```
@@ -196,7 +206,10 @@ bun run db:push
 
 2. **Create channels**:
    - Create a text channel called `#recommendations`
-   - Create a forum channel called `#library` (or `#recs`, `#archive` - keep it short!)
+   - Create a forum channel called `#fiction-vault`
+   - Create a forum channel called `#athenaeum`
+   - Create a forum channel called `#growth-lab`
+   - Create a text channel called `#search`
 
 3. **Get channel IDs**:
    - Enable Developer Mode: Settings → Advanced → Developer Mode
@@ -204,16 +217,17 @@ bun run db:push
    - Paste into `.env`:
      ```env
      RECOMMENDATIONS_CHANNEL_ID=123456789012345678
-     PROCESSED_RECOMMENDATIONS_FORUM_ID=123456789012345678
+     FICTION_VAULT_FORUM_ID=123456789012345678
+     ATHENAEUM_FORUM_ID=123456789012345678
+     GROWTH_LAB_FORUM_ID=123456789012345678
+     SEARCH_CHANNEL_ID=123456789012345678
      ```
 
-4. **Create forum tags** in your forum channel (`#library`):
-   - 🎥 Video
-   - 🎙️ Podcast
-   - 📰 Article
-   - 📚 Book
-   - 🛠️ Tool
-   - 🎓 Course
+4. **Create forum tags**:
+   The bot will warn you about missing tags on startup.
+   Each library forum needs 20 specialized tags.
+   Check the bot logs for the complete list or see
+   `src/features/recommendations/config/library-tags.ts`
 
 ## Step 8: Run the Bot!
 
