@@ -34,7 +34,10 @@ function analyzeQuestionComplexity(question: string): 'simple' | 'moderate' | 'c
 /**
  * Build system prompt with recommendation context and adaptive instructions
  */
-function buildSystemPrompt(recommendation: Recommendation, questionComplexity: string): string {
+function buildSystemPrompt(
+  recommendation: Recommendation,
+  questionComplexity: 'simple' | 'moderate' | 'complex'
+): string {
   const adaptiveInstructions = {
     simple:
       'Provide a concise, direct answer. Keep it brief (1-3 sentences) unless more detail is specifically requested.',

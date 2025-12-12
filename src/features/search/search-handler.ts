@@ -32,8 +32,10 @@ export async function handleSearchQuery(message: Message): Promise<void> {
   logger.info('Processing search query', { query, user: message.author.tag });
 
   try {
-    // Show typing indicator
-    await message.channel.sendTyping();
+    // Show typing indicator (only if channel supports it)
+    if ('sendTyping' in message.channel) {
+      await message.channel.sendTyping();
+    }
 
     // Parse the query
     const searchQuery = await parseSearchQuery(query);

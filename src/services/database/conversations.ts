@@ -1,6 +1,18 @@
 import { prisma } from './client.js';
 import type { ConversationMessage, ThreadEngagement, Recommendation } from '@prisma/client';
 
+export type ThreadEngagementWithRecommendation = ThreadEngagement & {
+  recommendation: {
+    title: string | null;
+    contentType: string | null;
+    topics: string[];
+  };
+};
+
+export type RecommendationWithEngagement = Recommendation & {
+  engagement: ThreadEngagement | null;
+};
+
 export interface CreateConversationMessageData {
   messageId: string;
   threadId: string;
@@ -160,8 +172,8 @@ export class ConversationService {
       select: { userId: true, userName: true },
     });
 
-    const uniqueUserIds = [...new Set(allMessages.map((m) => m.userId))];
-    const uniqueUserNames = [...new Set(allMessages.map((m) => m.userName))];
+    const uniqueUserIds = [...new Set(allMessages.map((m: { userId: string }) => m.userId))];
+    const uniqueUserNames = [...new Set(allMessages.map((m: { userName: string }) => m.userName))];
 
     // Get total message counts
     const totalMessages = await prisma.conversationMessage.count({
@@ -182,7 +194,13 @@ export class ConversationService {
       select: { topicsDiscussed: true },
     });
 
-    const allTopics = [...new Set(allMessagesWithTopics.flatMap((m) => m.topicsDiscussed || []))];
+    const allTopics = [
+      ...new Set(
+        allMessagesWithTopics.flatMap(
+          (m: { topicsDiscussed: string[] | null }) => m.topicsDiscussed || []
+        )
+      ),
+    ];
 
     // Calculate average response time
     const botResponses = await prisma.conversationMessage.findMany({
@@ -192,7 +210,10 @@ export class ConversationService {
 
     const avgResponseTime =
       botResponses.length > 0
-        ? botResponses.reduce((sum, r) => sum + (r.responseTime || 0), 0) / botResponses.length
+        ? botResponses.reduce(
+            (sum: number, r: { responseTime: number | null }) => sum + (r.responseTime || 0),
+            0
+          ) / botResponses.length
         : null;
 
     // Get first and last message timestamps
@@ -245,7 +266,7 @@ export class ConversationService {
   /**
    * Get engagement stats for a thread
    */
-  async getEngagementStats(threadId: string): Promise<ThreadEngagement | null> {
+  async getEngagementStats(threadId: string): Promise<ThreadEngagementWithRecommendation | null> {
     return prisma.threadEngagement.findUnique({
       where: { threadId },
       include: {
@@ -263,7 +284,7 @@ export class ConversationService {
   /**
    * Get top engaged recommendations
    */
-  async getTopEngagedRecommendations(limit: number = 10): Promise<Recommendation[]> {
+  async getTopEngagedRecommendations(limit: number = 10): Promise<RecommendationWithEngagement[]> {
     return prisma.recommendation.findMany({
       where: {
         conversationCount: { gt: 0 },

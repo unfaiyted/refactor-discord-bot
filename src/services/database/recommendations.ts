@@ -15,11 +15,11 @@ export interface UpdateRecommendationMetadata {
   description?: string;
   contentType?: string;
   topics?: string[];
-  duration?: string;
+  duration?: string | null;
   qualityScore?: number;
   sentiment?: string;
   aiSummary?: string;
-  thumbnail?: string;
+  thumbnail?: string | null;
   // Multi-library classification
   libraryType?: string;
   primaryTag?: string;

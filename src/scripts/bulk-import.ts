@@ -235,6 +235,9 @@ async function processUrl(url: string, messageId: string, client: Client): Promi
     sentiment: metadata.sentiment,
     aiSummary: metadata.summary,
     thumbnail,
+    libraryType: metadata.libraryType,
+    primaryTag: metadata.primaryTag,
+    secondaryTags: metadata.secondaryTags,
   });
 
   // Build processed recommendation for forum post
@@ -254,6 +257,9 @@ async function processUrl(url: string, messageId: string, client: Client): Promi
       mainIdeas: metadata.mainIdeas,
       tldr: metadata.tldr,
       thumbnail,
+      libraryType: metadata.libraryType,
+      primaryTag: metadata.primaryTag,
+      secondaryTags: metadata.secondaryTags,
     },
   };
 

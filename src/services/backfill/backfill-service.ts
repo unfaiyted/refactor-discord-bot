@@ -1,4 +1,4 @@
-import type { Client, Message, TextChannel } from 'discord.js';
+import type { Client, Message, TextChannel, Collection } from 'discord.js';
 import { logger } from '@utils/logger.js';
 import { env } from '@config/env.js';
 import { recommendationService } from '@services/database/recommendations.js';
@@ -184,7 +184,7 @@ async function fetchChannelMessagesAfter(
     const fetchLimit = Math.min(100, remainingSlots);
 
     try {
-      const options: any = { limit: fetchLimit };
+      const options: { limit: number; before?: string } = { limit: fetchLimit };
 
       // Fetch messages before the last message ID (going backwards in time)
       if (lastMessageId) {
@@ -200,7 +200,7 @@ async function fetchChannelMessagesAfter(
 
       // Filter by date if provided
       const filteredBatch = afterDate
-        ? messageBatch.filter((m) => m.createdAt > afterDate)
+        ? messageBatch.filter((m: Message) => m.createdAt > afterDate)
         : messageBatch;
 
       if (filteredBatch.size > 0) {

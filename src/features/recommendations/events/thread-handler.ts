@@ -25,11 +25,16 @@ export async function handleThreadMention(message: Message, client: Client): Pro
       return;
     }
 
-    // Verify it's in the processed recommendations forum
-    if (message.channel.parentId !== env.discord.processedRecommendationsForumId) {
-      logger.debug('Thread is not in processed recommendations forum', {
+    // Verify it's in one of the library forums
+    const libraryForumIds = [
+      env.discord.fictionVaultForumId,
+      env.discord.athenaeumForumId,
+      env.discord.growthLabForumId,
+    ];
+    if (!libraryForumIds.includes(message.channel.parentId!)) {
+      logger.debug('Thread is not in a library forum', {
         parentId: message.channel.parentId,
-        expectedParentId: env.discord.processedRecommendationsForumId,
+        libraryForumIds,
       });
       return;
     }
@@ -152,10 +157,15 @@ export async function handleThreadMention(message: Message, client: Client): Pro
  * Check if a message is a bot mention in a forum thread
  */
 export function isThreadMention(message: Message, client: Client): boolean {
+  const libraryForumIds = [
+    env.discord.fictionVaultForumId,
+    env.discord.athenaeumForumId,
+    env.discord.growthLabForumId,
+  ];
   return (
     message.channel.isThread() &&
     !message.author.bot &&
     message.mentions.has(client.user!) &&
-    message.channel.parentId === env.discord.processedRecommendationsForumId
+    libraryForumIds.includes(message.channel.parentId!)
   );
 }

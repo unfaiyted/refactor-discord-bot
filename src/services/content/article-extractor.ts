@@ -74,6 +74,11 @@ export class ArticleExtractor {
         thumbnail,
       };
 
+      // Validate required fields
+      if (!article.title || !article.textContent) {
+        throw new Error('Article is missing required fields (title or textContent)');
+      }
+
       logger.info('Successfully extracted article', {
         url,
         title: article.title,

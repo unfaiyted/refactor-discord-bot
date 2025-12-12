@@ -79,7 +79,12 @@ export class PodcastExtractor {
         throw new Error(`Spotify oEmbed API returned ${response.status}`);
       }
 
-      const data = await response.json();
+      const data = (await response.json()) as {
+        title?: string;
+        thumbnail_url?: string;
+        thumbnail_width?: number;
+        thumbnail_height?: number;
+      };
 
       logger.debug('Spotify oEmbed response', {
         title: data.title,

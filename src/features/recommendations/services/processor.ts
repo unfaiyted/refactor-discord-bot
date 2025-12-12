@@ -21,7 +21,7 @@ export interface ProcessedRecommendation {
     keyTakeaways?: string[];
     mainIdeas?: string[];
     tldr?: string;
-    thumbnail?: string;
+    thumbnail?: string | null;
     // Multi-library classification
     libraryType: 'fiction' | 'athenaeum' | 'growth';
     primaryTag: string;

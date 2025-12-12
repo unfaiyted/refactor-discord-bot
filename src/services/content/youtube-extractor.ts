@@ -61,7 +61,7 @@ export class YouTubeExtractor {
         viewCount: info.basic_info.view_count || undefined,
         description: info.basic_info.short_description || undefined,
         thumbnail: info.basic_info.thumbnail?.[0]?.url || undefined,
-        publishedTime: info.basic_info.publish_date || undefined,
+        // publishedTime: publish_date is not available in the current ytdl-core types
       };
 
       // Try to get transcript
