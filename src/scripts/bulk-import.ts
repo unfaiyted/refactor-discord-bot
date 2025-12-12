@@ -264,11 +264,13 @@ async function processUrl(url: string, messageId: string, client: Client): Promi
   };
 
   // Create forum post
+  // Note: Using 'bulk-import' as the recommender ID - won't create a real mention
+  // since it's not a valid Discord user ID, but will display consistently
   const { postId, threadId } = await createForumPost(
     client,
     processed,
     `bulk-import://${messageId}`, // Synthetic message URL
-    'Bulk Import'
+    'bulk-import'
   );
 
   // Mark as processed

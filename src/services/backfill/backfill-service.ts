@@ -275,7 +275,7 @@ async function processHistoricalMessage(message: Message, client: Client): Promi
       client,
       processed,
       message.url,
-      message.author.tag
+      message.author.id
     );
 
     // Step 3: Update database with forum post info

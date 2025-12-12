@@ -202,7 +202,7 @@ async function migrateToMultiLibrary() {
                   },
                 },
                 originalMessageUrl,
-                rec.recommenderName
+                rec.recommenderId
               );
 
               // Update recommendation with new forum post info

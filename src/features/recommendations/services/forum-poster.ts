@@ -62,7 +62,7 @@ export async function createForumPost(
   client: Client,
   recommendation: ProcessedRecommendation,
   originalMessageUrl: string,
-  recommenderTag: string
+  recommenderId: string
 ): Promise<{ postId: string; threadId: string }> {
   try {
     // Get the correct forum channel based on library type
@@ -157,9 +157,9 @@ export async function createForumPost(
       });
     }
 
-    // Add recommender info at the end
+    // Add recommender info at the end with proper Discord mention
     embedBuilder.addFields(
-      { name: 'Recommended by', value: recommenderTag, inline: true },
+      { name: 'Recommended by', value: `<@${recommenderId}>`, inline: true },
       {
         name: 'Original Message',
         value: `[Jump to message](${originalMessageUrl})`,

@@ -34,7 +34,7 @@ export async function handleRecommendationMessage(message: Message): Promise<voi
       message.client,
       processed,
       message.url,
-      message.author.tag
+      message.author.id
     );
 
     // Step 3: Update database with forum post info
