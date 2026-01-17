@@ -40,10 +40,10 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.32.1",
     "@mozilla/readability": "^0.6.0",
-    "@prisma/client": "^6.1.0",
+    "@prisma/client": "^6.19.2",
     "discord.js": "^14.16.3",
-    "dotenv": "^16.4.7",
-    "jsdom": "^27.3.0",
+    "dotenv": "^16.6.1",
+    "jsdom": "^27.4.0",
     "youtubei.js": "^16.0.1"
   },
   "devDependencies": {
@@ -60,7 +60,7 @@
     "conventional-changelog-conventionalcommits": "^9.1.0",
     "husky": "^9.1.7",
     "prettier": "^3.4.2",
-    "prisma": "^6.1.0",
+    "prisma": "^6.19.2",
     "semantic-release": "^24.2.6"
   }
 }
