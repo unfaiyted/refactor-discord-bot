@@ -1,4 +1,47 @@
 services:
+  # Gluetun VPN - Routes bot traffic through Surfshark VPN
+  gluetun:
+    image: qmcgaw/gluetun:latest
+    container_name: gluetun
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    environment:
+      # VPN Provider Configuration
+      - VPN_SERVICE_PROVIDER=surfshark
+      - VPN_TYPE=wireguard
+
+      # Surfshark WireGuard Credentials
+      - WIREGUARD_PRIVATE_KEY=${SURFSHARK_PRIVATE_KEY}
+      - WIREGUARD_ADDRESSES=${SURFSHARK_ADDRESSES}
+
+      # Server Location
+      - SERVER_COUNTRIES=${VPN_SERVER_COUNTRIES:-United States}
+      - SERVER_CITIES=${VPN_SERVER_CITIES:-Dallas}
+
+      # Timezone for accurate logs
+      - TZ=America/Chicago
+
+      # Update server list daily
+      - UPDATER_PERIOD=24h
+
+      # Allow access to local Docker network
+      - FIREWALL_OUTBOUND_SUBNETS=172.16.0.0/12,192.168.0.0/16
+
+    volumes:
+      # Persist Gluetun data
+      - gluetun_data:/gluetun
+    restart: unless-stopped
+    networks:
+      - bot-network
+    healthcheck:
+      test: ['CMD', '/gluetun-entrypoint', 'healthcheck']
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
   # PostgreSQL Database
   postgres:
     image: postgres:17-alpine
@@ -20,7 +63,7 @@ services:
     networks:
       - bot-network
 
-  # Discord Bot
+  # Discord Bot - Routes through Gluetun VPN
   bot:
     build:
       context: .
@@ -28,8 +71,14 @@ services:
       target: production # Use production build target
     container_name: refactor-bot
     restart: unless-stopped
+
+    # Route all bot traffic through Gluetun VPN
+    network_mode: 'service:gluetun'
+
     depends_on:
       postgres:
+        condition: service_healthy
+      gluetun:
         condition: service_healthy
     env_file:
       - .env
@@ -46,13 +95,13 @@ services:
     volumes:
       # Mount data directory from host (for bulk imports and cache)
       - ./data:/app/data
-    networks:
-      - bot-network
 
 volumes:
   postgres_data:
     driver: local
   bot_cache:
+    driver: local
+  gluetun_data:
     driver: local
 
 networks:
