@@ -63,7 +63,7 @@ export async function createForumPost(
   recommendation: ProcessedRecommendation,
   originalMessageUrl: string,
   recommenderId: string
-): Promise<{ postId: string; threadId: string }> {
+): Promise<{ postId: string; threadId: string; forumChannelId: string }> {
   try {
     // Get the correct forum channel based on library type
     const libraryType = recommendation.metadata.libraryType;
@@ -187,6 +187,7 @@ export async function createForumPost(
     return {
       postId: thread.id,
       threadId: thread.id,
+      forumChannelId: forumId,
     };
   } catch (error) {
     logger.error('Failed to create forum post', error);

@@ -32,7 +32,19 @@ export class YouTubeExtractor {
   private async getClient(): Promise<Innertube> {
     if (!this.youtube) {
       logger.debug('Initializing YouTube client');
-      this.youtube = await Innertube.create();
+
+      // Use cookie authentication if provided (helps bypass IP blocks)
+      const youtubeCookie = process.env.YOUTUBE_COOKIE;
+
+      if (youtubeCookie) {
+        logger.debug('Using cookie authentication for YouTube');
+        this.youtube = await Innertube.create({
+          cookie: youtubeCookie,
+        });
+      } else {
+        logger.debug('Using unauthenticated YouTube client');
+        this.youtube = await Innertube.create();
+      }
     }
     return this.youtube;
   }

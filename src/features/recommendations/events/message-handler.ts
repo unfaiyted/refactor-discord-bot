@@ -3,6 +3,23 @@ import { logger } from '@utils/logger.js';
 import { processRecommendation } from '../services/processor.js';
 import { createForumPost } from '../services/forum-poster.js';
 import { recommendationService } from '@services/database/recommendations.js';
+import type { LibraryType } from '../config/library-tags.js';
+
+/**
+ * Get friendly library name from library type
+ */
+function getLibraryName(libraryType: LibraryType): string {
+  switch (libraryType) {
+    case 'fiction':
+      return 'Fiction Vault';
+    case 'athenaeum':
+      return 'Athenaeum';
+    case 'growth':
+      return 'Growth Lab';
+    default:
+      return 'Library';
+  }
+}
 
 /**
  * Handle a new recommendation message
@@ -30,7 +47,7 @@ export async function handleRecommendationMessage(message: Message): Promise<voi
     }
 
     // Step 2: Create forum post
-    const { postId, threadId } = await createForumPost(
+    const { postId, threadId, forumChannelId } = await createForumPost(
       message.client,
       processed,
       message.url,
@@ -40,7 +57,20 @@ export async function handleRecommendationMessage(message: Message): Promise<voi
     // Step 3: Update database with forum post info
     await recommendationService.markAsProcessed(processed.recommendationId, postId, threadId);
 
-    // Step 4: Add success reaction and remove processing reaction
+    // Step 4: Reply with link to library forum thread
+    const forumThreadUrl = `https://discord.com/channels/${message.guildId}/${forumChannelId}/${threadId}`;
+    const libraryName = getLibraryName(processed.metadata.libraryType);
+
+    try {
+      await message.reply({
+        content: `✅ Your recommendation has been added to **${libraryName}**!\n\n📚 Continue the discussion here: ${forumThreadUrl}`,
+        allowedMentions: { repliedUser: false },
+      });
+    } catch (replyError) {
+      logger.debug('Could not send success reply', replyError);
+    }
+
+    // Step 5: Add success reaction and remove processing reaction
     await message.reactions.removeAll().catch(() => {});
     await message.react('✅').catch(() => {
       logger.debug('Could not add success reaction');
